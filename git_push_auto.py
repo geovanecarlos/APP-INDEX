@@ -8,7 +8,7 @@ os.chdir("/home/nathan/DAS/APP-INDEX")
 
 # 📁 Caminhos de origem e destino
 origem = "/home/nathan/DAS/Indices"
-destino = "/home/nathan/DAS/dataset"
+destino = "/home/nathan/DAS/APP-INDEX/dataset"
 
 # 🔧 Cria a pasta 'dataset' se ela não existir
 if not os.path.exists(destino):
