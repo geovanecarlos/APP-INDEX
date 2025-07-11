@@ -1,38 +1,28 @@
-name: Atualização Mensal de Dados
+name: Commit Automático
 
 on:
+  workflow_dispatch:  # permite executar manualmente o workflow pelo GitHub
   schedule:
-    # Executa às 15:48, 16:48 e 17:48 UTC diariamente
-    - cron: '58 15,16,17 * * *'
-  workflow_dispatch:  # permite execução manual
+    - cron: '10 16,17,18 * * *'  
 
 jobs:
-  update-data:
+  auto-commit:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clonar o repositório
+      - name: Checkout do repositório
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configurar Git
         run: |
-          git config --global user.name "geovanecarlos"
-          git config --global user.email "geovanecarlos.miguel@gmail.com"
+          git config user.name "geovanecarlos"
+          git config user.email "geovanecarlos.miguel@gmail.com"
 
-      - name: Verificar se houve mudanças
-        id: check_changes
+      - name: Verificar modificações
         run: |
+          git status
           git add .
-          if git diff --cached --quiet; then
-            echo "no_changes=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "no_changes=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Commit e push das alterações
-        if: steps.check_changes.outputs.no_changes == 'false'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git commit -m "Atualização dos dados automática"
-          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD:${{ github.ref_name }}
+          git commit -m "Commit mensal dos dados" || echo "Nada para commitar"
+          git push origin main
