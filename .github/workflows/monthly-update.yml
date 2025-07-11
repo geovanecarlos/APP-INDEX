@@ -19,10 +19,6 @@ jobs:
           git config --global user.name "geovanecarlos"
           git config --global user.email "geovanecarlos.miguel@gmail.com"
 
-      - name: Rodar script de atualização de dados
-        run: |
-          python scripts/atualizar_dados.py
-
       - name: Verificar se houve mudanças
         id: check_changes
         run: |
