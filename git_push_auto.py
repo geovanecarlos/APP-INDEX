@@ -1,26 +1,39 @@
 import os
+import shutil
 import subprocess
 import datetime
-import shutil
 
-# Força o diretório do repositório
+# 🏁 Define o diretório raiz do repositório
 os.chdir("/home/nathan/DAS/APP-INDEX")
 
-# === COPIA A PASTA INDICES ===
+# 📁 Caminhos de origem e destino
 origem = "/home/nathan/DAS/Indices"
-destino = "/home/nathan/DAS/APP-INDEX/dataset"
+destino = "/home/nathan/DAS/dataset"
 
-if os.path.exists(destino):
-    shutil.rmtree(destino)
-shutil.copytree(origem, destino)
-print("Pasta copiada com sucesso!")
+# 🔧 Cria a pasta 'dataset' se ela não existir
+if not os.path.exists(destino):
+    os.makedirs(destino)
 
-# === COMANDOS GIT ===
+# 📂 Copia os arquivos da pasta 'Indices' para 'dataset'
+for item in os.listdir(origem):
+    origem_item = os.path.join(origem, item)
+    destino_item = os.path.join(destino, item)
+
+    if os.path.isdir(origem_item):
+        if os.path.exists(destino_item):
+            shutil.rmtree(destino_item)
+        shutil.copytree(origem_item, destino_item)
+    else:
+        shutil.copy2(origem_item, destino_item)
+
+print("✅ Dados copiados de 'Indices' para 'dataset' com sucesso.")
+
+# ⚙️ Função para executar comandos shell
 def run(cmd):
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     return result.stdout.strip(), result.returncode
 
-# Verifica alterações
+# 📌 Verifica se há modificações no repositório
 status, _ = run("git status --porcelain")
 if status:
     mensagem = f"Atualização em: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
@@ -28,8 +41,8 @@ if status:
     run(f'git commit -m "{mensagem}"')
     _, push_code = run("git push origin main")
     if push_code == 0:
-        print("Push realizado com sucesso!")
+        print("✅ Push realizado com sucesso!")
     else:
-        print("Erro ao realizar o push.")
+        print("❌ Erro ao realizar o push.")
 else:
-    print("Nenhuma alteração detectada. Nada a fazer.")
+    print("ℹ️ Nenhuma alteração detectada. Nada a fazer.")
