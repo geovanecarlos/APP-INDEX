@@ -2,7 +2,7 @@ name: Atualização Mensal de Dados
 
 on:
   schedule:
-    - cron: '15 13 11 * *'  # Executa no dia 11 de cada mês às 13:15 no horário de brasilia
+    - cron: '15 16 11 * *'  # Executa no dia 11 de cada mês às 13:15 no horário de brasilia
   workflow_dispatch:      # Permite acionar manualmente também
 
 jobs:
