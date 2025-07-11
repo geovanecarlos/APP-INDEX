@@ -3,10 +3,10 @@ import shutil
 import subprocess
 import datetime
 
-# 🏁 Define o diretório raiz do repositório
+# 🏁 Define o diretório raiz do do projeto
 os.chdir("/home/nathan/DAS/APP-INDEX")
 
-# 📁 Caminhos de origem e destino
+# 📁 Caminhos de origem e destino dos dados
 origem = "/home/nathan/DAS/Indices"
 destino = "/home/nathan/DAS/APP-INDEX/dataset"
 
@@ -36,7 +36,7 @@ def run(cmd):
 # 📌 Verifica se há modificações no repositório
 status, _ = run("git status --porcelain")
 if status:
-    mensagem = f"Atualização em: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    mensagem = f"commit realizado em: {datetime.datetime.now().strftime('%Y-%m-%d')}"
     run("git add .")
     run(f'git commit -m "{mensagem}"')
     _, push_code = run("git push origin main")
