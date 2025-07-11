@@ -15,8 +15,8 @@ jobs:
 
     - name: Configurar Git
       run: |
-        git config geovanecarlos
-        git config user geovanecarlos.miguel@gmail.com
+        git config --global user.name "geovanecarlos"
+        git config --global user.email "geovanecarlos.miguel@gmail.com"
 
     - name: Verificar se houve mudanças
       run: |
@@ -26,5 +26,5 @@ jobs:
     - name: Commit e push das alterações
       run: |
         git add .
-        git commit -m "Atualização dos dados"
-        git push origin main
+        git commit -m "Atualização dos dados" || echo "Nada para commitar"
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main
