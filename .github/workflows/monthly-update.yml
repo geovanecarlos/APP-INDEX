@@ -3,7 +3,7 @@ name: Atualização Mensal de Dados
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '40 15,16,17 * * *'
+    - cron:  '48 15,16,17 * * *'
 
 jobs:
   update-data:
@@ -23,8 +23,14 @@ jobs:
         git status
         git diff
 
+    - name: Atualizar branch local
+      run: |
+        git pull origin ${{ github.ref_name }}
+
     - name: Commit e push das alterações
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git add .
         git commit -m "Atualização dos dados" || echo "Nada para commitar"
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main
+        git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD:${{ github.ref_name }}
