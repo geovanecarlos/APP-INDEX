@@ -15,8 +15,8 @@ jobs:
 
     - name: Configurar Git
       run: |
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
+        git config geovanecarlos
+        git config user geovanecarlos.miguel@gmail.com
 
     - name: Atualizar dados com script Python
       run: |
@@ -30,8 +30,5 @@ jobs:
     - name: Commit e push das alterações
       run: |
         git add .
-        git commit -m "Atualização mensal dos dados"
+        git commit -m "Atualização dos dados"
         git push
-      env:
-        # Necessário se quiser push com token pessoal (opcional, pois GitHub Actions já tem permissões por padrão)
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
