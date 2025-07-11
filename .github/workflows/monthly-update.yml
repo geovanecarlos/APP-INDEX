@@ -2,8 +2,8 @@ name: Atualização Mensal de Dados
 
 on:
   schedule:
-    - cron: '15 16 11 * *'  # Executa no dia 11 de cada mês às 13:15 no horário de brasilia
-  workflow_dispatch:      # Permite acionar manualmente também
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '25 15,16,17 * * *'
 
 jobs:
   update-data:
@@ -18,10 +18,6 @@ jobs:
         git config geovanecarlos
         git config user geovanecarlos.miguel@gmail.com
 
-    - name: Atualizar dados com script Python
-      run: |
-        python scripts/atualizar_dados.py
-
     - name: Verificar se houve mudanças
       run: |
         git status
@@ -31,4 +27,4 @@ jobs:
       run: |
         git add .
         git commit -m "Atualização dos dados"
-        git push
+        git push origin main
