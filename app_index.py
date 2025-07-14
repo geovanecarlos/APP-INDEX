@@ -139,41 +139,41 @@ with tab2:
         # -----------------------------
         # Botão para download dos dados (VERSÃO CORRIGIDA)
         # -----------------------------
-        st.markdown("### 📥 Baixar dados filtrados")
+        st.markdown("<h2 style='font-size:24px; color:#333;'>📥 Download data</h2>",unsafe_allow_html=True)
 
-        formato = st.selectbox(
-            "Escolha o formato do arquivo:",
-            options=["CSV (.csv)", "Texto (.txt)"]
+        file_format = st.selectbox(
+            "Choose file format:",
+            options=["CSV (.csv)", "Text (.txt)"]
         )
 
-        nome_arquivo_base = f"{index_name}_dados_filtrados"
+        base_filename = f"{index_name}_indice data"
 
-        # Inicializa a variável para evitar UnboundLocalError
+        # Initialize variable to avoid UnboundLocalError
         data_to_download = None
         mime_type = ""
         file_name = ""
 
-        if formato == "CSV (.csv)":
+        if file_format == "CSV (.csv)":
             data_to_download = df_plot.to_csv(index=False).encode("utf-8")
             mime_type = "text/csv"
-            file_name = f"{nome_arquivo_base}.csv"
+            file_name = f"{base_filename}.csv"
 
-        elif formato == "Texto (.txt)":
+        elif file_format == "Text (.txt)":
             data_to_download = df_plot.to_csv(index=False, sep="\t").encode("utf-8")
             mime_type = "text/plain"
-            file_name = f"{nome_arquivo_base}.txt"
+            file_name = f"{base_filename}.txt"
 
-        # Verifica se os dados foram preparados antes de mostrar o botão
+        # Verify if data was prepared before showing the button
         if data_to_download is not None:
             st.download_button(
-                label="⬇️ Baixar arquivo",
+                label="⬇️ Download file",
                 data=data_to_download,
                 file_name=file_name,
                 mime=mime_type,
-                help="Clique para baixar os dados do índice selecionado no formato escolhido."
+                help="Click to download the selected indice data in the chosen format."
             )
         else:
-            st.warning("Não foi possível preparar os dados para download.")
+            st.warning("Could not prepare data for download.")
 
     if __name__ == "__main__":
         plot_graficos()
