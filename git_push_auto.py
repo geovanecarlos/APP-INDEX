@@ -35,7 +35,7 @@ def run(cmd):
     return result.stdout.strip(), result.stderr.strip(), result.returncode
 
 # 📌 Verifica se há modificações no repositório
-status, _, _ = run("git status --porcelain")
+status, _, _ = run("git status")
 if status:
     mensagem = f"commit realizado em: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     run("git add .")
@@ -61,4 +61,3 @@ if status:
             print(push_err)
 else:
     print("ℹ️ Nenhuma alteração detectada. Nada a fazer.")
-import streamlit as st
