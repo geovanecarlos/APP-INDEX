@@ -43,7 +43,7 @@ if status:
 
     # 🔄 Faz pull antes do push para evitar conflitos com o repositório remoto
     print("🔄 Executando git pull --rebase...")
-    _, pull_err, pull_code = run("git pull --rebase")
+    _, pull_err, pull_code = run("git pull --rebase origin main")
 
     if pull_code != 0:
         print("❌ Erro ao realizar o git pull:")
