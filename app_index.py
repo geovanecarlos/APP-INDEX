@@ -79,7 +79,7 @@ with tab1:
 with tab2:
     def plot_graficos():
         st.markdown(
-            "<h2 style='font-size:24px; color:#333;'>📈 Indices - Time Series</h2>",
+            "<h2 style='font-size:24px; color:#333;'>📈 Index - Time Series</h2>",
             unsafe_allow_html=True
         )
         index_name = st.sidebar.selectbox("Select indice:", list_var)
