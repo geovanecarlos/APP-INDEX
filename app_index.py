@@ -78,16 +78,17 @@ with tab1:
 
 with tab2:
     def plot_graficos():
-        st.sidebar.image(
-            "https://github.com/geovanecarlos/APP-INDEX/blob/main/logo-tool.png?raw=true",
-            use_column_width=True
-        )
 
         st.markdown(
             "<h2 style='font-size:24px; color:black;'>📈 Time series of indexes</h2>",
             unsafe_allow_html=True
         )
         index_name = st.sidebar.selectbox("Select indice:", list_var)
+
+        st.sidebar.image(
+        "https://github.com/geovanecarlos/APP-INDEX/blob/main/logo-tool.png?raw=true",
+        use_column_width=True
+        )
 
         # Filtra o DataFrame correspondente ao índice selecionado
         df = None
