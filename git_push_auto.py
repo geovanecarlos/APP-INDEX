@@ -45,4 +45,4 @@ if status:
     else:
         print("❌ Erro ao realizar o push.")
 else:
-    print("ℹ️ Nenhuma alteração detectada. Nada a fazer.")
+    print("ℹ️  Nenhuma alteração detectada. Nada a fazer.")
