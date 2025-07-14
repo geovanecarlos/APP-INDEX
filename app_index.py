@@ -1,22 +1,22 @@
 # Importação das bibliotecas
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 from pathlib import Path
+from io import BytesIO
 import warnings
 warnings.filterwarnings("ignore")
 
 # Configuração do Layout do APP
 def layouts():
     st.set_page_config(
-    page_title="Online Tool for Teleconnection Indices",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-    
+        page_title="Online Tool for Teleconnection Indices",
+        page_icon="📊",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+
 if __name__ == "__main__":
     layouts()
 
@@ -29,23 +29,19 @@ def load_datasets():
     list_dataset = []
     for dataset_path in dir_dataset.glob("*.txt"):
         dataset = pd.read_csv(dataset_path, sep="\t")
-        # Coleta os nomes dos índices (ex: NINO3, NINO4, NINO12)
         if len(dataset.columns) > 1:
             var = dataset.columns[1]
         else:
             var = dataset.columns[0]
-        # Adiciona à lista como uma tupla (nome da variável, DataFrame)
         list_dataset.append((var, dataset))
     return list_dataset
 
 def get_list_dataset_and_vars():
     list_dataset = load_datasets()
-    # Cria uma lista apenas com os nomes das variáveis dos datasets
     list_var = [var for var, _ in list_dataset]
     return list_dataset, list_var
 
 list_dataset, list_var = get_list_dataset_and_vars()
-
 
 # Função para plotagem das páginas do APP
 tab1, tab2 = st.tabs(["About", "Indices"])
@@ -53,7 +49,6 @@ tab1, tab2 = st.tabs(["About", "Indices"])
 with tab1:
     def introducao():
         st.subheader('Online Tool for Teleconnection Indices')
-        st.markdown("<h3 style='font-size: 1.2em;'>Introduction:</h3>", unsafe_allow_html=True)
         horizontal_bar = "<hr style='margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #ff9793;'><br>"    
         st.markdown(
             """
@@ -69,21 +64,24 @@ with tab1:
         st.markdown(horizontal_bar, True)
             
         st.markdown("""
-                        **Developers:**
-                        1. Anita Drumond - anita.drumondou@gmail.com - Instituto Tecnológico Vale
-                        2. Natan Nogueira - natanchisostomo@gmail.com - Universidade Federal de Itajubá
-                        3. Michelle Simões Reboita - reboita@unifei.edu.br - Universidade Federal de Itajubá
-                        4. Geovane Carlos Miguel - geovanecarlos.miguel@gmail.com - Universidade Federal de Itajubá
-                        """)
+            **Developers:**
+            1. Anita Drumond - anita.drumondou@gmail.com - Instituto Tecnológico Vale  
+            2. Natan Nogueira - natanchisostomo@gmail.com - Universidade Federal de Itajubá  
+            3. Michelle Simões Reboita - reboita@unifei.edu.br - Universidade Federal de Itajubá  
+            4. Geovane Carlos Miguel - geovanecarlos.miguel@gmail.com - Universidade Federal de Itajubá
+        """)
         st.markdown(horizontal_bar, True)
-                        
+
     if __name__ == "__main__":
         introducao()
 
 with tab2:
     def plot_graficos():
-        st.title("Índices - Série Temporal")
-        index_name = st.sidebar.selectbox("Selecione o índice:", list_var )
+        st.markdown(
+            "<h2 style='font-size:24px; color:#333;'>Indices - Time Series</h2>",
+            unsafe_allow_html=True
+        )
+        index_name = st.sidebar.selectbox("Select indice:", list_var)
 
         # Filtra o DataFrame correspondente ao índice selecionado
         df = None
@@ -94,29 +92,84 @@ with tab2:
                 break
 
         if df is not None and {"time", "value"}.issubset(df.columns):
-            # Separa valores positivos e negativos
-            df_pos = df.copy()
-            df_neg = df.copy()
+            df["time"] = pd.to_datetime(df["time"], errors='coerce')
+            df.dropna(subset=["time"], inplace=True)
+            df.sort_values("time", inplace=True)
+
+            df_plot = df.copy()
+
+            # Separar positivos e negativos
+            df_pos = df_plot.copy()
+            df_neg = df_plot.copy()
             df_pos["value"] = df_pos["value"].clip(lower=0)
             df_neg["value"] = df_neg["value"].clip(upper=0)
 
-            fig = go.Figure([
-                go.Bar(x=df_pos["time"], y=df_pos["value"], marker_color='red', name='Positivo'),
-                go.Bar(x=df_neg["time"], y=df_neg["value"], marker_color='blue', name='Negativo')
-            ])
+            # Gráfico Plotly
+            fig = go.Figure()
+            fig.add_trace(go.Bar(x=df_pos["time"], y=df_pos["value"],
+                                 marker_color="red", name="Positive"))
+            fig.add_trace(go.Bar(x=df_neg["time"], y=df_neg["value"],
+                                 marker_color="blue", name="Negative"))
+
             fig.update_layout(
-                title=f"{index_name} (mensal desde 1980)",
-                xaxis_title="Data",
+                title=f"{index_name} - Monthly",
+                xaxis_title="Date",
                 yaxis_title=index_name,
                 showlegend=False,
                 bargap=0,
+                height=500,
+                xaxis=dict(
+                    rangeselector=dict(
+                        buttons=list([
+                            dict(step="all", label="All"),
+                            dict(count=30, label="30 years", step="year", stepmode="backward"),
+                            dict(count=10, label="10 years", step="year", stepmode="backward"),
+                            dict(count=5, label="5 years", step="year", stepmode="backward"),
+                            dict(count=1, label="1 year", step="year", stepmode="backward")
+                        ])
+                    ),
+                    rangeslider=dict(visible=True),
+                    type="date"
+                )
             )
+
             fig.update_traces(hovertemplate="Data: %{x|%b %Y}<br>Valor: %{y:.2f}")
-
             st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.warning("O DataFrame não possui as colunas esperadas: 'time' e 'value'.")
 
-    # Exibindo os gráficos no Streamlit
+            # -----------------------------
+            # Botão para download dos dados
+            # -----------------------------
+            st.markdown("<h2 style='font-size:24px; color:#333;'>📥 Download indice data</h2>",
+                        unsafe_allow_html=True
+                        )
+
+            formato = st.selectbox(
+                "Choose file format:",
+                options=["CSV (.csv)", "Text (.txt)"]
+            )
+
+            nome_arquivo_base = f"{index_name}_database"
+
+            if formato == "CSV (.csv)":
+                data_to_download = df_plot.to_csv(index=False).encode("utf-8")
+                mime_type = "text/csv"
+                file_name = f"{nome_arquivo_base}.csv"
+
+            elif formato == "Texto (.txt)":
+                data_to_download = df_plot.to_csv(index=False, sep="\t").encode("utf-8")
+                mime_type = "text/plain"
+                file_name = f"{nome_arquivo_base}.txt"
+
+            st.download_button(
+                label="⬇️ Download file",
+                data=data_to_download,
+                file_name=file_name,
+                mime=mime_type,
+                help="Click to download the selected indice data in your chosen format."
+            )
+
+        else:
+            st.warning("The DataFrame does not have the expected columns: 'time' e 'value'.")
+
     if __name__ == "__main__":
         plot_graficos()
