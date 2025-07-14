@@ -3,18 +3,19 @@ import shutil
 import subprocess
 import datetime
 
-# 🏁 Define o diretório raiz do do projeto
-os.chdir("/home/nathan/DAS/APP-INDEX")
+# Caminho do projeto
+projeto = "/home/nathan/DAS/APP-INDEX"
+os.chdir(projeto)
 
-# 📁 Caminhos de origem e destino dos dados
+# Caminhos
 origem = "/home/nathan/DAS/Indices"
-destino = "/home/nathan/DAS/APP-INDEX/dataset"
+destino = os.path.join(projeto, "dataset")
 
-# 🔧 Cria a pasta 'dataset' se ela não existir
+# Cria pasta destino se não existir
 if not os.path.exists(destino):
     os.makedirs(destino)
 
-# 📂 Copia os arquivos da pasta 'Indices' para 'dataset'
+# Copia conteúdo da pasta
 for item in os.listdir(origem):
     origem_item = os.path.join(origem, item)
     destino_item = os.path.join(destino, item)
@@ -26,23 +27,24 @@ for item in os.listdir(origem):
     else:
         shutil.copy2(origem_item, destino_item)
 
-print("✅ Dados copiados de 'Indices' para 'dataset' com sucesso.")
+print("✅ Dados copiados de 'Indices' para 'dataset'.")
 
-# ⚙️ Função para executar comandos shell
+# Executa comandos shell
 def run(cmd):
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    return result.stdout.strip(), result.returncode
+    return result.stdout.strip(), result.stderr.strip(), result.returncode
 
-# 📌 Verifica se há modificações no repositório
-status, _ = run("git status --porcelain")
+# Verifica alterações no repositório
+status, _, _ = run("git status --porcelain")
 if status:
-    mensagem = f"commit realizado em: {datetime.datetime.now().strftime('%Y-%m-%d')}"
+    msg = f"commit realizado em: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     run("git add .")
-    run(f'git commit -m "{mensagem}"')
-    _, push_code = run("git push origin main")
-    if push_code == 0:
+    run(f'git commit -m "{msg}"')
+    _, stderr, code = run("git push origin main")
+    if code == 0:
         print("✅ Push realizado com sucesso!")
     else:
-        print("❌ Erro ao realizar o push.")
+        print("❌ Erro ao realizar o push:")
+        print(stderr)
 else:
-    print("ℹ️ Nenhuma alteração detectada. Nada a fazer.")
+    print("ℹ️ Nenhuma alteração detectada.")
