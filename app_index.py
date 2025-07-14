@@ -79,7 +79,7 @@ with tab1:
 with tab2:
     def plot_graficos():
         st.markdown(
-            "<h2 style='font-size:24px; color:#333;'>📈 Time series of indexes</h2>",
+            "<h2 style='font-size:24px; color:black;'>📈 Time series of indexes</h2>",
             unsafe_allow_html=True
         )
         index_name = st.sidebar.selectbox("Select indice:", list_var)
@@ -153,7 +153,7 @@ with tab2:
         # -----------------------------
         # Botão para download dos dados
         # -----------------------------
-        st.markdown("<h2 style='font-size:24px; color:#333;'>📥 Download data</h2>",unsafe_allow_html=True)
+        st.markdown("<h2 style='font-size:24px; color:black;'>📥 Download data</h2>",unsafe_allow_html=True)
 
         file_format = st.selectbox(
             "Choose file format:",
@@ -193,7 +193,7 @@ with tab2:
         # -----------------------------
         # Explicar metodologia
         # -----------------------------
-        st.markdown("<h2 style='font-size:24px; color:#333;'>🛠️ Methodology</h2>",unsafe_allow_html=True)
+        st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>",unsafe_allow_html=True)
         st.markdown("""⏳ In development..."""
                     )
 
