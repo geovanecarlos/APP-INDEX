@@ -49,12 +49,12 @@ tab1, tab2 = st.tabs(["Home", "Indices"])
 
 with tab1:
     def introducao():
-        st.subheader('Online Tool for Teleconnection Indices')
+        st.subheader('Teleconnection Index Online Tool')
         horizontal_bar = "<hr style='margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #ff9793;'><br>"    
         st.markdown(
             """
             <div style='text-align: justify'>
-            <b>Online Tool for Teleconnection Indices:</b> This is an interactive tool that compiles more than 15 teleconnection indices, updated monthly. All indices are calculated using the same database and climatological period (1991–2020). Atmospheric variables are obtained from the ERA5 reanalysis (Hersbach et al., 2020), provided by the European Centre for Medium-Range Weather Forecasts (ECMWF), while sea surface temperature (SST) data come from the Extended Reconstructed Sea Surface Temperature (ERSST) version 5 database.
+            <b>Teleconnection Index Online Tool:</b> This is an interactive tool that compiles more than 15 teleconnection indices, updated monthly. All indices are calculated using the same database and climatological period (1991–2020). Atmospheric variables are obtained from the ERA5 reanalysis (Hersbach et al., 2020), provided by the European Centre for Medium-Range Weather Forecasts (ECMWF), while sea surface temperature (SST) data come from the Extended Reconstructed Sea Surface Temperature (ERSST) version 5 database.
             Since the tool works with gridded data, the monthly climatology is first calculated for each grid point, followed by the computation of the monthly anomaly at each grid point. The regional mean anomaly is then obtained by averaging the anomalies over the selected area of interest. No trend removal is applied to the data.
             For each index, you will find an interactive button that provides the plotted time series, the data in ASCII format, and a description of the methodology used in the calculation of the index.
             If you use this tool, please cite the following article: [insert article reference here].<br>
