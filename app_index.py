@@ -39,12 +39,13 @@ def load_datasets():
 def get_list_dataset_and_vars():
     list_dataset = load_datasets()
     list_var = [var for var, _ in list_dataset]
+    list_var.sort()
     return list_dataset, list_var
 
 list_dataset, list_var = get_list_dataset_and_vars()
 
 # Função para plotagem das páginas do APP
-tab1, tab2 = st.tabs(["About", "Indices"])
+tab1, tab2 = st.tabs(["Home", "Indices"])
 
 with tab1:
     def introducao():
@@ -65,9 +66,9 @@ with tab1:
             
         st.markdown("""
             **Developers:**
-            1. Anita Drumond - anita.drumondou@gmail.com - Instituto Tecnológico Vale  
-            2. Natan Nogueira - natanchisostomo@gmail.com - Universidade Federal de Itajubá  
-            3. Michelle Simões Reboita - reboita@unifei.edu.br - Universidade Federal de Itajubá  
+            1. Natan Nogueira - natanchisostomo@gmail.com - Universidade Federal de Itajubá  
+            2. Michelle Simões Reboita - reboita@unifei.edu.br - Universidade Federal de Itajubá
+            3. Anita Drumond - anita.drumondou@gmail.com - Instituto Tecnológico Vale 
             4. Geovane Carlos Miguel - geovanecarlos.miguel@gmail.com - Universidade Federal de Itajubá
         """)
         st.markdown(horizontal_bar, True)
@@ -78,7 +79,7 @@ with tab1:
 with tab2:
     def plot_graficos():
         st.markdown(
-            "<h2 style='font-size:24px; color:#333;'>Indices - Time Series</h2>",
+            "<h2 style='font-size:24px; color:#333;'>📈 Indices - Time Series</h2>",
             unsafe_allow_html=True
         )
         index_name = st.sidebar.selectbox("Select indice:", list_var)
@@ -133,7 +134,7 @@ with tab2:
                 )
             )
 
-            fig.update_traces(hovertemplate="Data: %{x|%b %Y}<br>Valor: %{y:.2f}")
+            fig.update_traces(hovertemplate="Date: %{x|%b %Y}<br>Value: %{y:.2f}")
             st.plotly_chart(fig, use_container_width=True)
 
         # -----------------------------
@@ -174,6 +175,14 @@ with tab2:
             )
         else:
             st.warning("Could not prepare data for download.")
+    
+
+        # -----------------------------
+        # Explicar metodologia
+        # -----------------------------
+        st.markdown("<h2 style='font-size:24px; color:#333;'>🛠️ Methodology</h2>",unsafe_allow_html=True)
+        st.markdown("""⏳ In development..."""
+                    )
 
     if __name__ == "__main__":
         plot_graficos()
