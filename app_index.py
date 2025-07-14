@@ -136,40 +136,44 @@ with tab2:
             fig.update_traces(hovertemplate="Data: %{x|%b %Y}<br>Valor: %{y:.2f}")
             st.plotly_chart(fig, use_container_width=True)
 
-            # -----------------------------
-            # Botão para download dos dados
-            # -----------------------------
-            st.markdown("<h2 style='font-size:24px; color:#333;'>📥 Download indice data</h2>",
-                        unsafe_allow_html=True
-                        )
+        # -----------------------------
+        # Botão para download dos dados (VERSÃO CORRIGIDA)
+        # -----------------------------
+        st.markdown("### 📥 Baixar dados filtrados")
 
-            formato = st.selectbox(
-                "Choose file format:",
-                options=["CSV (.csv)", "Text (.txt)"]
-            )
+        formato = st.selectbox(
+            "Escolha o formato do arquivo:",
+            options=["CSV (.csv)", "Texto (.txt)"]
+        )
 
-            nome_arquivo_base = f"{index_name}_database"
+        nome_arquivo_base = f"{index_name}_dados_filtrados"
 
-            if formato == "CSV (.csv)":
-                data_to_download = df_plot.to_csv(index=False).encode("utf-8")
-                mime_type = "text/csv"
-                file_name = f"{nome_arquivo_base}.csv"
+        # Inicializa a variável para evitar UnboundLocalError
+        data_to_download = None
+        mime_type = ""
+        file_name = ""
 
-            elif formato == "Texto (.txt)":
-                data_to_download = df_plot.to_csv(index=False, sep="\t").encode("utf-8")
-                mime_type = "text/plain"
-                file_name = f"{nome_arquivo_base}.txt"
+        if formato == "CSV (.csv)":
+            data_to_download = df_plot.to_csv(index=False).encode("utf-8")
+            mime_type = "text/csv"
+            file_name = f"{nome_arquivo_base}.csv"
 
+        elif formato == "Texto (.txt)":
+            data_to_download = df_plot.to_csv(index=False, sep="\t").encode("utf-8")
+            mime_type = "text/plain"
+            file_name = f"{nome_arquivo_base}.txt"
+
+        # Verifica se os dados foram preparados antes de mostrar o botão
+        if data_to_download is not None:
             st.download_button(
-                label="⬇️ Download file",
+                label="⬇️ Baixar arquivo",
                 data=data_to_download,
                 file_name=file_name,
                 mime=mime_type,
-                help="Click to download the selected indice data in your chosen format."
+                help="Clique para baixar os dados do índice selecionado no formato escolhido."
             )
-
         else:
-            st.warning("The DataFrame does not have the expected columns: 'time' e 'value'.")
+            st.warning("Não foi possível preparar os dados para download.")
 
     if __name__ == "__main__":
         plot_graficos()
