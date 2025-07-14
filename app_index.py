@@ -137,7 +137,7 @@ with tab2:
             st.plotly_chart(fig, use_container_width=True)
 
         # -----------------------------
-        # Botão para download dos dados (VERSÃO CORRIGIDA)
+        # Botão para download dos dados
         # -----------------------------
         st.markdown("<h2 style='font-size:24px; color:#333;'>📥 Download data</h2>",unsafe_allow_html=True)
 
