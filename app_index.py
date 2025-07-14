@@ -23,7 +23,7 @@ if __name__ == "__main__":
 # Diretório da pasta do projeto
 base_path = Path(__file__).resolve().parent
 
-@st.cache_data
+@st.cache_data(ttl=60) 
 def load_datasets():
     dir_dataset = base_path / "dataset"
     list_dataset = []
