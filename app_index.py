@@ -45,7 +45,7 @@ def get_list_dataset_and_vars():
 list_dataset, list_var = get_list_dataset_and_vars()
 
 # Função para plotagem das páginas do APP
-tab1, tab2 = st.tabs(["Home", "Indexes"])
+tab1, tab2 = st.tabs(["Home", "Indices"])
 
 with tab1:
     def introducao():
@@ -54,7 +54,7 @@ with tab1:
         st.markdown(
             """
             <div style='text-align: justify'>
-            <b>Teleconnection Index Online Tool:</b> This is an interactive tool that compiles more than 15 teleconnection indexes, updated monthly. All indices are calculated using the same database and climatological period (1991–2020). Atmospheric variables are obtained from the ERA5 reanalysis (Hersbach et al., 2020), provided by the European Centre for Medium-Range Weather Forecasts (ECMWF), while sea surface temperature (SST) data come from the Extended Reconstructed Sea Surface Temperature (ERSST) version 5 database.
+            <b>Teleconnection Index Online Tool:</b> This is an interactive tool that compiles more than 15 teleconnection indices, updated monthly. All indices are calculated using the same database and climatological period (1991–2020). Atmospheric variables are obtained from the ERA5 reanalysis (Hersbach et al., 2020), provided by the European Centre for Medium-Range Weather Forecasts (ECMWF), while sea surface temperature (SST) data come from the Extended Reconstructed Sea Surface Temperature (ERSST) version 5 database.
             Since the tool works with gridded data, the monthly climatology is first calculated for each grid point, followed by the computation of the monthly anomaly at each grid point. The regional mean anomaly is then obtained by averaging the anomalies over the selected area of interest. No trend removal is applied to the data.
             For each index, you will find an interactive button that provides the plotted time series, the data in ASCII format, and a description of the methodology used in the calculation of the index.
             If you use this tool, please cite the following article: [insert article reference here].<br>
@@ -79,16 +79,15 @@ with tab1:
 with tab2:
     def plot_graficos():
 
-        st.markdown(
-            "<h2 style='font-size:24px; color:black;'>📈 Time series of indexes</h2>",
-            unsafe_allow_html=True
-        )
-        index_name = st.sidebar.selectbox("Select indice:", list_var)
+        st.markdown("<h2 style='font-size:24px; color:black;'>📈 Time series of indices</h2>",
+                    unsafe_allow_html=True
+                    )
 
-        st.sidebar.image(
-        "https://github.com/geovanecarlos/APP-INDEX/blob/main/logo-tool.png?raw=true",
-        use_column_width=True
-        )
+        st.sidebar.image("https://github.com/geovanecarlos/APP-INDEX/blob/main/logo-tool.png?raw=true",
+                         use_container_width=True
+                         )
+
+        index_name = st.sidebar.selectbox("Select index:", list_var)
 
         # Filtra o DataFrame correspondente ao índice selecionado
         df = None
@@ -200,7 +199,7 @@ with tab2:
         # Explicar metodologia
         # -----------------------------
         st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>",unsafe_allow_html=True)
-        st.markdown("""⏳ In development werik..."""
+        st.markdown("""⏳ In development ..."""
                     )
 
     if __name__ == "__main__":
