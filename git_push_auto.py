@@ -43,6 +43,6 @@ if status:
     if push_code == 0:
         print("✅ Push realizado com sucesso!")
     else:
-        print("❌ Erro ao realizar o push.")
+        print("❌Erro ao realizar o push.")
 else:
     print("ℹ️  Nenhuma alteração detectada. Nada a fazer.")
