@@ -79,7 +79,7 @@ with tab1:
 with tab2:
     def plot_graficos():
         st.sidebar.image(
-            "https://github.com/geovanecarlos/APP-INDEX/blob/main/logo_tool.png?raw=true",
+            "https://github.com/geovanecarlos/APP-INDEX/blob/main/logo-tool.png?raw=true",
             use_column_width=True
         )
 
