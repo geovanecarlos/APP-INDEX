@@ -61,3 +61,4 @@ if status:
             print(push_err)
 else:
     print("ℹ️ Nenhuma alteração detectada. Nada a fazer.")
+import streamlit as st
