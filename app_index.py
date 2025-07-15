@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime
 from pathlib import Path
+import time
 from io import BytesIO
 import warnings
 warnings.filterwarnings("ignore")
@@ -74,11 +75,70 @@ with tab1:
         """)
         st.markdown(horizontal_bar, True)
 
+        # ======================
+        # TABELA ESTILO IMAGEM
+        # ======================
+
+        last_values = {}
+        last_date = None
+
+        for var, data in list_dataset:
+            df_temp = data.copy()
+            df_temp.columns = ["time", "value"]
+            df_temp["time"] = pd.to_datetime(df_temp["time"], errors='coerce')
+            df_temp.dropna(subset=["time"], inplace=True)
+            df_temp.sort_values("time", inplace=True)
+            if not df_temp.empty:
+                last_row = df_temp.iloc[-1]
+                val = last_row["value"]
+                if pd.isna(val):
+                    last_values[var] = "-"
+                else:
+                    last_values[var] = round(val, 2)
+                last_date = last_row["time"]
+            else:
+                last_values[var] = "-"
+
+        # Ordena os índices alfabeticamente (ou ajuste a ordem manualmente se desejar)
+        ordered_keys = sorted(last_values.keys())
+        formatted_date = last_date.strftime("%B %Y") if last_date else "Last month"
+
+        # Quebrar os índices em 3 linhas
+        chunk_size = (len(ordered_keys) + 2) // 3  # divide em 3 linhas aproximadamente iguais
+        chunks = [ordered_keys[i:i + chunk_size] for i in range(0, len(ordered_keys), chunk_size)]
+
+        # Add cores de fundo na tela
+        html = f"""
+        <div style="background-color:#e3e2e2ff; padding:20px; border-radius:10px; color:black; font-family:monospace; text-align:center;">
+            <h4 style="color:black; margin-bottom:25px;">Last update: {formatted_date}</h4>
+        """
+
+        for chunk in chunks:
+            html += "<table style='width:100%; border-collapse:collapse; margin-bottom:20px;'>"
+            html += "<tr>"
+            for key in chunk:
+                html += f"<th style='padding:6px; font-size:16px; color:black;'>{key}</th>"
+            html += "</tr><tr>"
+            for key in chunk:
+                val = last_values[key]
+                if val == "-":
+                    color = "black"
+                    display_val = "-"
+                else:
+                    color = "red" if val > 0 else "blue" if val < 0 else "white"
+                    display_val = f"{val:.2f}"
+                html += f"<td style='padding:6px; font-size:16px; font-weight:bold; color:{color};'>{display_val}</td>"
+            html += "</tr></table>"
+
+        html += "</div>"
+
+        st.markdown(html, unsafe_allow_html=True)
+
     if __name__ == "__main__":
         introducao()
 
 with tab2:
-    def plot_graficos():
+    def plot_indices():
 
         st.markdown("<h2 style='font-size:24px; color:black;'>📈 Time series of indices</h2>",
                     unsafe_allow_html=True
@@ -195,7 +255,6 @@ with tab2:
         else:
             st.warning("Could not prepare data for download.")
     
-
         # -----------------------------
         # Explicar metodologia
         # -----------------------------
@@ -204,4 +263,4 @@ with tab2:
                     )
 
     if __name__ == "__main__":
-        plot_graficos()
+        plot_indices()
