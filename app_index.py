@@ -260,8 +260,7 @@ with tab2:
         # Explicar metodologia
         # -----------------------------
         st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>",unsafe_allow_html=True)
-        st.markdown("""⏳ In development ..."""
-                    )
+        st.markdown("""⏳ In development ...""")
 
     if __name__ == "__main__":
         plot_indices()
