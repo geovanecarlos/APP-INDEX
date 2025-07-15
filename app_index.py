@@ -172,7 +172,7 @@ with tab2:
             df_pos["value"] = df_pos["value"].clip(lower=0)
             df_neg["value"] = df_neg["value"].clip(upper=0)
 
-            # Gráfico Plotly
+            # PLoagem utilizando o Plotly
             fig = go.Figure()
             fig.add_trace(go.Bar(x=df_pos["time"], y=df_pos["value"],
                                  marker_color="red", name="Positive"))
@@ -195,6 +195,7 @@ with tab2:
                         buttons=list([
                             dict(step="all", label="All"),
                             dict(count=30, label="30 years", step="year", stepmode="backward"),
+                            dict(count=20, label="20 years", step="year", stepmode="backward"),
                             dict(count=10, label="10 years", step="year", stepmode="backward"),
                             dict(count=5, label="5 years", step="year", stepmode="backward"),
                             dict(count=1, label="1 year", step="year", stepmode="backward")
@@ -211,8 +212,6 @@ with tab2:
                     tickfont=dict(color="black")
                 )
             )
-
-
 
             fig.update_traces(hovertemplate="Date: %{x|%b %Y}<br>Value: %{y:.2f}")
             st.plotly_chart(fig, use_container_width=True)
@@ -264,3 +263,4 @@ with tab2:
 
     if __name__ == "__main__":
         plot_indices()
+        

@@ -37,7 +37,7 @@ def run(cmd):
 # 📌 Verifica se há modificações no repositório
 status, _, _ = run("git status")
 if status:
-    mensagem = f"commit realizado em: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    mensagem = f"commit realizado em: {datetime.datetime.now().strftime('%Y-%m-%d')}"
     run("git add .")
     run(f'git commit -m "{mensagem}"')
 
