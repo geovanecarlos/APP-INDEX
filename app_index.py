@@ -24,6 +24,7 @@ if __name__ == "__main__":
 # Diretório da pasta do projeto
 base_path = Path(__file__).resolve().parent
 
+# Limpa o cache do Streamlit
 st.cache_data.clear()
 st.cache_resource.clear()
 def load_datasets():
