@@ -145,9 +145,9 @@ with tab2:
                     unsafe_allow_html=True
                     )
 
-        st.sidebar.image("https://github.com/geovanecarlos/APP-INDEX/blob/main/logo-app-tool.png?raw=true",
-                         use_container_width=True
-                         )
+        # st.sidebar.image("https://github.com/geovanecarlos/APP-INDEX/blob/main/logo-app-tool.png?raw=true",
+        #                  use_container_width=True
+        #                  )
 
         index_name = st.sidebar.selectbox("Select index:", list_var)
 
