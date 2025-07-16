@@ -52,7 +52,24 @@ tab1, tab2 = st.tabs(["Home", "Indices"])
 
 with tab1:
     def introducao():
-        st.subheader('Teleconnection Index Online Tool')
+        # CSS personalizado com gradiente azul
+        title_html = """
+            <h1 style='
+                text-align: center;
+                background: linear-gradient(to right, #001f3f, #00bfff);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                font-size: 2.2em;
+                font-weight: bold;
+                font-family: 'Poppins', sans-serif;
+                margin-bottom: 2px;
+            '>
+                Teleconnection Index Online Tool
+            </h1>
+        """
+
+        # Renderiza o título com gradiente no app           
+        st.markdown(title_html, unsafe_allow_html=True)
         horizontal_bar = "<hr style='margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #ff9793;'><br>"    
         st.markdown(
             """
