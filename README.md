@@ -1,5 +1,3 @@
-## Teleconnection Index Online Tool
-
 <hr style="margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #ff9793;"><br>
 
 <div style="text-align: justify">
