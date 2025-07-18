@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore")
 # Configuração do Layout do APP
 def layouts():
     st.set_page_config(
-        page_title="Online Tool for Teleconnection Indices",
+        page_title="Teleconnection Index Online Tool",
         page_icon="📊",
         layout="wide",
         initial_sidebar_state="expanded"
