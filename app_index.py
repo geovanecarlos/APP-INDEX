@@ -24,9 +24,7 @@ if __name__ == "__main__":
 # Diretório da pasta do projeto
 base_path = Path(__file__).resolve().parent
 
-# Limpa o cache do Streamlit
-st.cache_data.clear()
-st.cache_resource.clear()
+@st.cache_data
 def load_datasets():
     dir_dataset = base_path / "dataset"
     list_dataset = []
@@ -276,6 +274,7 @@ with tab2:
         # Explicar metodologia
         # -----------------------------
         st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>",unsafe_allow_html=True)
+        
         st.markdown("""⏳ In development ...""")
 
     if __name__ == "__main__":
