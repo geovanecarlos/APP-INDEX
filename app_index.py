@@ -303,11 +303,19 @@ with tab2:
             metodologia_texto_corrigido = corrigir_simbolo_grau(metodologia_texto)
 
             # Exibição formatada
-            st.markdown(f"{metodologia_texto_corrigido}")
-            st.markdown(f"🔗 **Access**: {acesso}")
-            st.markdown(f"<p style='text-align: justify;'><strong>📚 Reference:</strong> {referencia}</p>",
-                        unsafe_allow_html=True
-                        )
+            st.markdown(
+                f"<p style='text-align: justify;'> {metodologia_texto_corrigido}</p>",
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                f"<p style='text-align: justify;'><strong>🔗 Access:</strong> {acesso}</p>",
+                unsafe_allow_html=True
+            )
+            st.markdown(
+                f"<p style='text-align: justify;'><strong>📚 Reference:</strong> {referencia}</p>",
+                unsafe_allow_html=True
+            )
+
         else:
             st.markdown(f"⏳ Methodology for the **{index_name}** index under development.")
 
