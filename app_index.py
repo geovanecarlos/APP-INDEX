@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime
 from pathlib import Path
-import time
+import re
 from io import BytesIO
 import warnings
 warnings.filterwarnings("ignore")
@@ -72,7 +72,7 @@ with tab1:
         st.markdown(
             """
             <div style='text-align: justify'>
-            <b>Teleconnection Index Online Tool:</b> This is an interactive tool that compiles more than 15 teleconnection indices, updated monthly. All indices are calculated using the same database and climatological period (1991–2020). Atmospheric variables are obtained from the ERA5 reanalysis (Hersbach et al., 2020), provided by the European Centre for Medium-Range Weather Forecasts (ECMWF), while sea surface temperature (SST) data come from the Extended Reconstructed Sea Surface Temperature (ERSST) version 5 database.
+            <b>Teleconnection Index Online Tool:</b> This is an interactive tool that compiles more than 15 teleconnection indices, updated monthly. All indices are calculated using the same database and climatological period (1991–2020). Atmospheric variables are obtained from the ERA5 reanalysis, provided by the European Centre for Medium-Range Weather Forecasts (ECMWF), while sea surface temperature (SST) data come from the Extended Reconstructed Sea Surface Temperature (ERSST) version 5 database.
             Since the tool works with gridded data, the monthly climatology is first calculated for each grid point, followed by the computation of the monthly anomaly at each grid point. The regional mean anomaly is then obtained by averaging the anomalies over the selected area of interest. No trend removal is applied to the data.
             For each index, you will find an interactive button that provides the plotted time series, the data in ASCII format, and a description of the methodology used in the calculation of the index.
             If you use this tool, please cite the following article: [insert article reference here].<br>
@@ -86,7 +86,7 @@ with tab1:
             **Developers:**
             1. Natan Nogueira - natanchisostomo@gmail.com - Universidade Federal de Itajubá  
             2. Michelle Simões Reboita - reboita@unifei.edu.br - Universidade Federal de Itajubá
-            3. Anita Drumond - anita.drumondou@gmail.com - Instituto Tecnológico Vale 
+            3. Anita Drumond - anita.drumond@pq.itv.org - Instituto Tecnológico Vale 
             4. Geovane Carlos Miguel - geovanecarlos.miguel@gmail.com - Universidade Federal de Itajubá
         """)
         st.markdown(horizontal_bar, True)
@@ -270,27 +270,44 @@ with tab2:
         else:
             st.warning("Could not prepare data for download.")
     
+
         # -----------------------------
         # Explicar metodologia
         # -----------------------------
         st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>", unsafe_allow_html=True)
 
-        # Caminho da pasta com metodologias
-        metodologia_path = base_path / "metodologias"
-        metodologia_path
-        metodologia_file = metodologia_path / f"{index_name}.txt"
-        metodologia_file
-        # Tenta carregar o arquivo de metodologia correspondente
-        if metodologia_file.exists():
-            with open(metodologia_file, "r", encoding="utf-8") as file:
-                metodologia_texto = file.read()
+        # Caminho do arquivo Excel com todas as metodologias
+        metodologia_excel = base_path / "Metodologias.xlsx"
+
+        # Leitura do Excel
+        df_metodologias = pd.read_excel(metodologia_excel)
+
+        # Normaliza os nomes para comparação robusta
+        index_name_normalizado = index_name.strip().lower()
+        df_metodologias["Index_normalizado"] = df_metodologias["Index"].astype(str).str.strip().str.lower()
+
+        # Função para corrigir o símbolo de grau
+        def corrigir_simbolo_grau(texto):
+            return re.sub(r'(?<=\d)o(?=[A-Za-z-])', '°', texto)
+
+        # Filtra a linha correspondente ao índice selecionado
+        linha = df_metodologias[df_metodologias["Index_normalizado"] == index_name_normalizado]
+
+        # Verifica se encontrou o índice no Excel
+        if not linha.empty:
+            metodologia_texto = linha["Methodology"].values[0]
+            acesso = linha["Access"].values[0]
+            referencia = linha["Reference"].values[0]
+
+            # Corrige o texto
+            metodologia_texto_corrigido = corrigir_simbolo_grau(metodologia_texto)
+
+            # Exibição formatada
+            st.markdown(f"{metodologia_texto_corrigido}")
+            st.markdown(f"🔗 **Access**: {acesso}")
+            st.markdown(f"📚 **Reference**: {referencia}")
         else:
-            metodologia_texto = f"Metodologia do índice **{index_name}** ainda não está disponível."
-
-        # Exibe o texto da metodologia
-        st.markdown(metodologia_texto)
-
-
+            st.markdown(f"⏳ Methodology for the **{index_name}** index under development.")
 
     if __name__ == "__main__":
         plot_indices()
