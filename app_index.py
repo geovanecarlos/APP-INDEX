@@ -273,9 +273,24 @@ with tab2:
         # -----------------------------
         # Explicar metodologia
         # -----------------------------
-        st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>",unsafe_allow_html=True)
-        
-        st.markdown("""⏳ In development ...""")
+        st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>", unsafe_allow_html=True)
+
+        # Caminho da pasta com metodologias
+        metodologia_path = base_path / "metodologias"
+        metodologia_path
+        metodologia_file = metodologia_path / f"{index_name}.txt"
+        metodologia_file
+        # Tenta carregar o arquivo de metodologia correspondente
+        if metodologia_file.exists():
+            with open(metodologia_file, "r", encoding="utf-8") as file:
+                metodologia_texto = file.read()
+        else:
+            metodologia_texto = f"Metodologia do índice **{index_name}** ainda não está disponível."
+
+        # Exibe o texto da metodologia
+        st.markdown(metodologia_texto)
+
+
 
     if __name__ == "__main__":
         plot_indices()
