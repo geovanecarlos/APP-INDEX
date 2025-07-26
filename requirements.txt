@@ -4,3 +4,4 @@ numpy==1.26.4
 matplotlib==3.10.3
 matplotlib-inline==0.1.7
 streamlit==1.46.1
+openpyxl==3.1.5
