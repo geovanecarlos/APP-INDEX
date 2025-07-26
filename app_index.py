@@ -187,15 +187,46 @@ with tab2:
             df_pos["value"] = df_pos["value"].clip(lower=0)
             df_neg["value"] = df_neg["value"].clip(upper=0)
 
-            # PLoagem utilizando o Plotly
+            # Ploagem utilizando o Plotly
             fig = go.Figure()
             fig.add_trace(go.Bar(x=df_pos["time"], y=df_pos["value"],
                                  marker_color="red", name="Positive"))
             fig.add_trace(go.Bar(x=df_neg["time"], y=df_neg["value"],
                                  marker_color="blue", name="Negative"))
+            
+            # Caminho do arquivo Excel com todas as metodologias
+            metodologia_excel = base_path / "Metodologias.xlsx"
+
+            # Leitura do Excel
+            df_metodologias = pd.read_excel(metodologia_excel)
+
+            # Normaliza os nomes para comparação robusta
+            index_name_normalizado = index_name.strip().lower()
+            df_metodologias["Index_normalizado"] = df_metodologias["Index"].astype(str).str.strip().str.lower()
+
+            # Função para corrigir o símbolo de grau
+            def corrigir_simbolo_grau(texto):
+                return re.sub(r'(?<=\d)o(?=[A-Za-z-])', '°', texto)
+
+            # Filtra a linha correspondente ao índice selecionado
+            linha = df_metodologias[df_metodologias["Index_normalizado"] == index_name_normalizado]
+
+            full_index_name = index_name
+            linha_info = df_metodologias[df_metodologias["Index_normalizado"] == index_name.lower()]
+            if not linha_info.empty:
+                full_index_name = linha_info["Name_Index"].values[0]
+
+            # Busca unidade de medida correspondente ao index_name
+            unit = ""
+            linha_unit = df_metodologias[df_metodologias["Index"].astype(str).str.strip().str.lower() == index_name.lower()]
+            if not linha_unit.empty and "Unit" in linha_unit.columns:
+                unit = linha_unit["Unit"].values[0]
+
+            # Define o texto do eixo Y
+            title_axis_y = f"{index_name} {unit}" if unit else index_name
 
             fig.update_layout(
-                title=f"{index_name} - Monthly",
+                title=f"{full_index_name} ({index_name}) - Monthly",
                 showlegend=False,
                 bargap=0,
                 height=500,
@@ -221,7 +252,7 @@ with tab2:
                 ),
                 yaxis=dict(
                     title=dict(
-                        text=index_name,
+                        text=title_axis_y,
                         font=dict(color="black")
                     ),
                     tickfont=dict(color="black")
@@ -276,23 +307,6 @@ with tab2:
         # -----------------------------
         st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>", unsafe_allow_html=True)
 
-        # Caminho do arquivo Excel com todas as metodologias
-        metodologia_excel = base_path / "Metodologias.xlsx"
-
-        # Leitura do Excel
-        df_metodologias = pd.read_excel(metodologia_excel)
-
-        # Normaliza os nomes para comparação robusta
-        index_name_normalizado = index_name.strip().lower()
-        df_metodologias["Index_normalizado"] = df_metodologias["Index"].astype(str).str.strip().str.lower()
-
-        # Função para corrigir o símbolo de grau
-        def corrigir_simbolo_grau(texto):
-            return re.sub(r'(?<=\d)o(?=[A-Za-z-])', '°', texto)
-
-        # Filtra a linha correspondente ao índice selecionado
-        linha = df_metodologias[df_metodologias["Index_normalizado"] == index_name_normalizado]
-
         # Verifica se encontrou o índice no Excel
         if not linha.empty:
             metodologia_texto = linha["Methodology"].values[0]
@@ -321,4 +335,3 @@ with tab2:
 
     if __name__ == "__main__":
         plot_indices()
-        
