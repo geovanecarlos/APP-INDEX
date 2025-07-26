@@ -305,7 +305,9 @@ with tab2:
             # Exibição formatada
             st.markdown(f"{metodologia_texto_corrigido}")
             st.markdown(f"🔗 **Access**: {acesso}")
-            st.markdown(f"📚 **Reference**: {referencia}")
+            st.markdown(f"<p style='text-align: justify;'><strong>📚 Reference:</strong> {referencia}</p>",
+                        unsafe_allow_html=True
+                        )
         else:
             st.markdown(f"⏳ Methodology for the **{index_name}** index under development.")
 
