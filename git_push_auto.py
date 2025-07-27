@@ -15,14 +15,20 @@ destino = os.path.join(projeto, "dataset")
 if not os.path.exists(destino):
     os.makedirs(destino)
 
+# 🧹 Limpa o conteúdo da pasta 'dataset' antes de copiar novos dados
+for item in os.listdir(destino):
+    item_path = os.path.join(destino, item)
+    if os.path.isdir(item_path):
+        shutil.rmtree(item_path)
+    else:
+        os.remove(item_path)
+
 # 📦 Copia os arquivos da pasta 'Indices' para 'dataset'
 for item in os.listdir(origem):
     origem_item = os.path.join(origem, item)
     destino_item = os.path.join(destino, item)
 
     if os.path.isdir(origem_item):
-        if os.path.exists(destino_item):
-            shutil.rmtree(destino_item)
         shutil.copytree(origem_item, destino_item)
     else:
         shutil.copy2(origem_item, destino_item)
