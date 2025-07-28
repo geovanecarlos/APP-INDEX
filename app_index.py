@@ -216,14 +216,8 @@ with tab2:
             if not linha_info.empty:
                 full_index_name = linha_info["Name_Index"].values[0]
 
-            # Busca unidade de medida correspondente ao index_name
-            unit = ""
-            linha_unit = df_metodologias[df_metodologias["Index"].astype(str).str.strip().str.lower() == index_name.lower()]
-            if not linha_unit.empty and "Unit" in linha_unit.columns:
-                unit = linha_unit["Unit"].values[0]
-
             # Define o texto do eixo Y
-            title_axis_y = f"{index_name} {unit}" if unit else index_name
+            title_axis_y = index_name
 
             fig.update_layout(
                 title=f"{full_index_name} ({index_name}) - Monthly",

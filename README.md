@@ -14,4 +14,3 @@
 4. Geovane Carlos Miguel - geovanecarlos.miguel@gmail.com - Universidade Federal de Itajubá
 
 <hr style="margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #ff9793;"><br>
-
