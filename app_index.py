@@ -21,27 +21,39 @@ def layouts():
 if __name__ == "__main__":
     layouts()
 
+display_order = [
+    "AAO", "PSA1", "PSA2", "AO", "PNA", "NAO", "DMI/IOD", "IOSD",
+    "NINO12", "NINO3", "NINO34", "NINO4", "SOI", "TNA", "TSA", "SASAI",
+    "SSTRG2", "SAODI", "SASDI", "ONI", "QBO", "PDO", "AMO", "MJO*"
+]
+
+# Mapeamento rótulos -> nomes reais nos dados
+alias = {
+    "NINO12": "NIN12",
+    "NINO3":  "NIN03",
+    "NINO34": "NIN34",
+    "NINO4":  "NIN04",
+    "DNI/IOD": "DMI/IOD",  # caso haja variante
+    "MJO*": "MJO"
+}
+
 # Diretório da pasta do projeto
 base_path = Path(__file__).resolve().parent
 
-@st.cache_data
+@st.cache_resource
 def load_datasets():
     dir_dataset = base_path / "dataset"
-    list_dataset = []
+    datasets = []
     for dataset_path in dir_dataset.glob("*.txt"):
-        dataset = pd.read_csv(dataset_path, sep="\t")
-        if len(dataset.columns) > 1:
-            var = dataset.columns[1]
-        else:
-            var = dataset.columns[0]
-        list_dataset.append((var, dataset))
-    return list_dataset
+        df = pd.read_csv(dataset_path, sep="\t")
+        var = df.columns[1] if len(df.columns) > 1 else df.columns[0]
+        datasets.append((var, df))
+    return datasets
 
 def get_list_dataset_and_vars():
-    list_dataset = load_datasets()
-    list_var = [var for var, _ in list_dataset]
-    list_var.sort()
-    return list_dataset, list_var
+    datasets = load_datasets()
+    vars_sorted = sorted(var for var, _ in datasets)
+    return datasets, vars_sorted
 
 list_dataset, list_var = get_list_dataset_and_vars()
 
@@ -72,10 +84,15 @@ with tab1:
         st.markdown(
             """
             <div style='text-align: justify'>
-            <b>Teleconnection Index Online Tool:</b> This is an interactive tool that compiles more than 15 teleconnection indices, updated monthly. All indices are calculated using the same database and climatological period (1991–2020). Atmospheric variables are obtained from the ERA5 reanalysis, provided by the European Centre for Medium-Range Weather Forecasts (ECMWF), while sea surface temperature (SST) data come from the Extended Reconstructed Sea Surface Temperature (ERSST) version 5 database.
-            Since the tool works with gridded data, the monthly climatology is first calculated for each grid point, followed by the computation of the monthly anomaly at each grid point. The regional mean anomaly is then obtained by averaging the anomalies over the selected area of interest. No trend removal is applied to the data.
-            For each index, you will find an interactive button that provides the plotted time series, the data in ASCII format, and a description of the methodology used in the calculation of the index.
-            If you use this tool, please cite the following article: [insert article reference here].<br>
+            <b>Teleconnection Index Online Tool:</b> This is an interactive tool that compiles more than 15 teleconnection indices, updated monthly.
+            All indices are calculated using the same database and climatological period (1991–2020). Atmospheric variables are obtained from the ERA5 reanalysis,
+            provided by the European Centre for Medium-Range Weather Forecasts (ECMWF), while sea surface temperature (SST) data come from the Extended Reconstructed
+            Sea Surface Temperature (ERSST) version 5 database. Since the tool works with gridded data, the monthly climatology is first calculated for each grid point,
+            followed by the computation of the monthly anomaly at each grid point. The regional mean anomaly is then obtained by averaging the anomalies over the
+            selected area of interest. No trend removal is applied to the data.  ONI and indices for low-frequency variability (QBO, PDO and AMO) are obtained from
+            external sources. We also highlight that the MJO is a daily index, so it is displayed separately from the other indices. For each index,
+            you will find an interactive button that provides the plotted time series, the data in ASCII format, and a description of the methodology used in the 
+            alculation of the index. If you use this tool, please cite the following article: [insert article reference here]<br>
             </div>
             """, unsafe_allow_html=True
         )
@@ -96,7 +113,7 @@ with tab1:
         # ======================
 
         last_values = {}
-        last_date = None
+        last_date = None  # guardará a MAIOR data entre todos os índices
 
         for var, data in list_dataset:
             df_temp = data.copy()
@@ -104,44 +121,54 @@ with tab1:
             df_temp["time"] = pd.to_datetime(df_temp["time"], errors='coerce')
             df_temp.dropna(subset=["time"], inplace=True)
             df_temp.sort_values("time", inplace=True)
+
             if not df_temp.empty:
                 last_row = df_temp.iloc[-1]
                 val = last_row["value"]
-                if pd.isna(val):
-                    last_values[var] = "-"
-                else:
-                    last_values[var] = round(val, 2)
-                last_date = last_row["time"]
+                last_values[var] = "-" if pd.isna(val) else round(val, 2)
+                # mantém a maior data observada
+                if last_date is None or last_row["time"] > last_date:
+                    last_date = last_row["time"]
             else:
                 last_values[var] = "-"
 
-        # Ordena os índices alfabeticamente (ou ajuste a ordem manualmente se desejar)
-        ordered_keys = sorted(last_values.keys())
+        def get_from_last_values(label: str):
+            """Retorna o valor usando o rótulo desejado, respeitando alias e case-insensitive."""
+            key = alias.get(label, label)
+            if key in last_values:
+                return last_values[key]
+            for k in last_values.keys():
+                if k.casefold() == key.casefold():
+                    return last_values[k]
+            return "-"
+
+        # quebra em 3 linhas com 8 colunas cada, mantendo a ordem fixa
+        rows = [display_order[i:i + 8] for i in range(0, len(display_order), 8)]
+
         formatted_date = last_date.strftime("%B %Y") if last_date else "Last month"
 
-        # Quebrar os índices em 3 linhas
-        chunk_size = (len(ordered_keys) + 2) // 3  # divide em 3 linhas aproximadamente iguais
-        chunks = [ordered_keys[i:i + chunk_size] for i in range(0, len(ordered_keys), chunk_size)]
-
-        # Add cores de fundo na tela
+        # bloco HTML
         html = f"""
         <div style="background-color:#e3e2e2ff; padding:20px; border-radius:10px; color:black; font-family:monospace; text-align:center;">
             <h4 style="color:black; margin-bottom:25px;">Last update: {formatted_date}</h4>
         """
 
-        for chunk in chunks:
+        for row in rows:
             html += "<table style='width:100%; border-collapse:collapse; margin-bottom:20px;'>"
+            # cabeçalho
+            html += "<tr>" + "".join(
+                f"<th style='padding:6px; font-size:16px; color:black;'>{label}</th>" for label in row
+            ) + "</tr>"
+
+            # valores
             html += "<tr>"
-            for key in chunk:
-                html += f"<th style='padding:6px; font-size:16px; color:black;'>{key}</th>"
-            html += "</tr><tr>"
-            for key in chunk:
-                val = last_values[key]
+            for label in row:
+                val = get_from_last_values(label)
                 if val == "-":
                     color = "black"
                     display_val = "-"
                 else:
-                    color = "red" if val > 0 else "blue" if val < 0 else "white"
+                    color = "red" if val > 0 else "blue" if val < 0 else "black"
                     display_val = f"{val:.2f}"
                 html += f"<td style='padding:6px; font-size:16px; font-weight:bold; color:{color};'>{display_val}</td>"
             html += "</tr></table>"
@@ -155,100 +182,70 @@ with tab1:
 
 with tab2:
     def plot_indices():
+        st.markdown("<h2 style='font-size:24px; color:black;'>📈 Time series of indices</h2>", unsafe_allow_html=True)
+        st.sidebar.image("https://github.com/geovanecarlos/APP-INDEX/blob/main/logo-app-tool.png?raw=true", use_container_width=True)
 
-        st.markdown("<h2 style='font-size:24px; color:black;'>📈 Time series of indices</h2>",
-                    unsafe_allow_html=True
-                    )
-
-        st.sidebar.image("https://github.com/geovanecarlos/APP-INDEX/blob/main/logo-app-tool.png?raw=true",
-                         use_container_width=True
-                         )
-
-        index_name = st.sidebar.selectbox("Select index:", list_var)
+        # Selectbox usando a mesma ordem da tabela
+        indice_escolhido_label = st.sidebar.selectbox("Select index:", display_order)
+        indice_escolhido = alias.get(indice_escolhido_label, indice_escolhido_label)
 
         # Filtra o DataFrame correspondente ao índice selecionado
-        df = None
-        for var, data in list_dataset:
-            if var == index_name:
-                df = data.copy()
-                df.columns = ["time", "value"]
-                break
-
-        if df is not None and {"time", "value"}.issubset(df.columns):
+        df = next((data.copy() for var, data in list_dataset if var == indice_escolhido), None)
+        if df is not None:
+            df.columns = ["time", "value"]
             df["time"] = pd.to_datetime(df["time"], errors='coerce')
             df.dropna(subset=["time"], inplace=True)
             df.sort_values("time", inplace=True)
 
-            df_plot = df.copy()
-
             # Separar positivos e negativos
-            df_pos = df_plot.copy()
-            df_neg = df_plot.copy()
+            df_pos = df.copy()
+            df_neg = df.copy()
             df_pos["value"] = df_pos["value"].clip(lower=0)
             df_neg["value"] = df_neg["value"].clip(upper=0)
 
-            # Ploagem utilizando o Plotly
-            fig = go.Figure()
-            fig.add_trace(go.Bar(x=df_pos["time"], y=df_pos["value"],
-                                 marker_color="red", name="Positive"))
-            fig.add_trace(go.Bar(x=df_neg["time"], y=df_neg["value"],
-                                 marker_color="blue", name="Negative"))
-            
-            # Caminho do arquivo Excel com todas as metodologias
+            # Plotagem utilizando o Plotly
+            fig = go.Figure([
+                go.Bar(x=df_pos["time"], y=df_pos["value"], marker_color="red", name="Positive"),
+                go.Bar(x=df_neg["time"], y=df_neg["value"], marker_color="blue", name="Negative")
+            ])
+
             metodologia_excel = base_path / "Metodologias.xlsx"
-
-            # Leitura do Excel
             df_metodologias = pd.read_excel(metodologia_excel)
-
-            # Normaliza os nomes para comparação robusta
-            index_name_normalizado = index_name.strip().lower()
             df_metodologias["Index_normalizado"] = df_metodologias["Index"].astype(str).str.strip().str.lower()
 
-            # Função para corrigir o símbolo de grau
             def corrigir_simbolo_grau(texto):
                 return re.sub(r'(?<=\d)o(?=[A-Za-z-])', '°', texto)
 
-            # Filtra a linha correspondente ao índice selecionado
+            index_name_normalizado = indice_escolhido.strip().lower()
             linha = df_metodologias[df_metodologias["Index_normalizado"] == index_name_normalizado]
 
-            full_index_name = index_name
-            linha_info = df_metodologias[df_metodologias["Index_normalizado"] == index_name.lower()]
-            if not linha_info.empty:
-                full_index_name = linha_info["Name_Index"].values[0]
-
-            # Define o texto do eixo Y
-            title_axis_y = index_name
+            full_index_name = linha["Name_Index"].values[0] if not linha.empty else indice_escolhido
+            title_axis_y = indice_escolhido
 
             fig.update_layout(
-                title=f"{full_index_name} ({index_name}) - Monthly",
+                title=f"{full_index_name} ({indice_escolhido}) - Monthly",
                 showlegend=False,
                 bargap=0,
                 height=500,
                 xaxis=dict(
-                    title=dict(
-                        text="Date",
-                        font=dict(color="black")
-                    ),
+                    title=dict(text="Date", font=dict(color="black")),
                     tickfont=dict(color="black"),
                     rangeselector=dict(
-                        font=dict(color="black"),  # <- AQUI adiciona a cor preta aos botões
-                        buttons=list([
+                        font=dict(color="black"),
+                        buttons=[
                             dict(step="all", label="All"),
                             dict(count=30, label="30 years", step="year", stepmode="backward"),
                             dict(count=20, label="20 years", step="year", stepmode="backward"),
                             dict(count=10, label="10 years", step="year", stepmode="backward"),
                             dict(count=5, label="5 years", step="year", stepmode="backward"),
                             dict(count=1, label="1 year", step="year", stepmode="backward")
-                        ])
+                        ]
                     ),
                     rangeslider=dict(visible=True),
                     type="date"
                 ),
                 yaxis=dict(
-                    title=dict(
-                        text=title_axis_y,
-                        font=dict(color="black")
-                    ),
+                    title=dict(text=title_axis_y, font=dict(color="black")),
                     tickfont=dict(color="black")
                 )
             )
@@ -256,35 +253,23 @@ with tab2:
             fig.update_traces(hovertemplate="Date: %{x|%b %Y}<br>Value: %{y:.2f}")
             st.plotly_chart(fig, use_container_width=True)
 
-        # -----------------------------
-        # Botão para download dos dados
-        # -----------------------------
-        st.markdown("<h2 style='font-size:24px; color:black;'>📥 Download data</h2>",unsafe_allow_html=True)
+            # -----------------------------
+            # Botão para download dos dados
+            # -----------------------------
+            st.markdown("<h2 style='font-size:24px; color:black;'>📥 Download data</h2>", unsafe_allow_html=True)
 
-        file_format = st.selectbox(
-            "Choose file format:",
-            options=["CSV (.csv)", "Text (.txt)"]
-        )
+            file_format = st.selectbox("Choose file format:", options=["CSV (.csv)", "Text (.txt)"])
+            base_filename = f"{indice_escolhido}_indice data"
 
-        base_filename = f"{index_name}_indice data"
+            if file_format == "CSV (.csv)":
+                data_to_download = df.to_csv(index=False).encode("utf-8")
+                mime_type = "text/csv"
+                file_name = f"{base_filename}.csv"
+            else:
+                data_to_download = df.to_csv(index=False, sep="\t").encode("utf-8")
+                mime_type = "text/plain"
+                file_name = f"{base_filename}.txt"
 
-        # Initialize variable to avoid UnboundLocalError
-        data_to_download = None
-        mime_type = ""
-        file_name = ""
-
-        if file_format == "CSV (.csv)":
-            data_to_download = df_plot.to_csv(index=False).encode("utf-8")
-            mime_type = "text/csv"
-            file_name = f"{base_filename}.csv"
-
-        elif file_format == "Text (.txt)":
-            data_to_download = df_plot.to_csv(index=False, sep="\t").encode("utf-8")
-            mime_type = "text/plain"
-            file_name = f"{base_filename}.txt"
-
-        # Verify if data was prepared before showing the button
-        if data_to_download is not None:
             st.download_button(
                 label="⬇️ Download file",
                 data=data_to_download,
@@ -292,40 +277,25 @@ with tab2:
                 mime=mime_type,
                 help="Click to download the selected indice data in the chosen format."
             )
+
+            # -----------------------------
+            # Explicar metodologia
+            # -----------------------------
+            st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>", unsafe_allow_html=True)
+
+            if not linha.empty:
+                metodologia_texto = linha["Methodology"].values[0]
+                acesso = linha["Access"].values[0]
+                referencia = linha["Reference"].values[0]
+                metodologia_texto_corrigido = corrigir_simbolo_grau(metodologia_texto)
+
+                st.markdown(f"<p style='text-align: justify;'> {metodologia_texto_corrigido}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='text-align: justify;'><strong>🔗 Access:</strong> {acesso}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='text-align: justify;'><strong>📚 Reference:</strong> {referencia}</p>", unsafe_allow_html=True)
+            else:
+                st.markdown(f"⏳ Methodology for the **{indice_escolhido}** index under development.")
         else:
             st.warning("Could not prepare data for download.")
-    
-
-        # -----------------------------
-        # Explicar metodologia
-        # -----------------------------
-        st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>", unsafe_allow_html=True)
-
-        # Verifica se encontrou o índice no Excel
-        if not linha.empty:
-            metodologia_texto = linha["Methodology"].values[0]
-            acesso = linha["Access"].values[0]
-            referencia = linha["Reference"].values[0]
-
-            # Corrige o texto
-            metodologia_texto_corrigido = corrigir_simbolo_grau(metodologia_texto)
-
-            # Exibição formatada
-            st.markdown(
-                f"<p style='text-align: justify;'> {metodologia_texto_corrigido}</p>",
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                f"<p style='text-align: justify;'><strong>🔗 Access:</strong> {acesso}</p>",
-                unsafe_allow_html=True
-            )
-            st.markdown(
-                f"<p style='text-align: justify;'><strong>📚 Reference:</strong> {referencia}</p>",
-                unsafe_allow_html=True
-            )
-
-        else:
-            st.markdown(f"⏳ Methodology for the **{index_name}** index under development.")
 
     if __name__ == "__main__":
         plot_indices()
