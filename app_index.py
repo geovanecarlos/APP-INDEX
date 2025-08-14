@@ -33,7 +33,7 @@ alias = {
     "NINO3":  "NIN03",
     "NINO34": "NIN34",
     "NINO4":  "NIN04",
-    "DNI/IOD": "DMI/IOD",  # caso haja variante
+    "DNI/IOD": "DMI/IOD",
     "MJO*": "MJO"
 }
 
