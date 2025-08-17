@@ -40,7 +40,7 @@ alias = {
 # Diretório da pasta do projeto
 base_path = Path(__file__).resolve().parent
 
-@st.cache_resource
+@st.cache_data
 def load_datasets():
     dir_dataset = base_path / "dataset"
     datasets = []
@@ -50,6 +50,7 @@ def load_datasets():
         datasets.append((var, df))
     return datasets
 
+@st.cache_data
 def get_list_dataset_and_vars():
     datasets = load_datasets()
     vars_sorted = sorted(var for var, _ in datasets)
