@@ -190,9 +190,18 @@ with tab2:
         indice_escolhido_label = st.sidebar.selectbox("Select index:", display_order)
         indice_escolhido = alias.get(indice_escolhido_label, indice_escolhido_label)
 
+        metodologia_excel = base_path / "Metodologias.xlsx"
+        df_metodologias = pd.read_excel(metodologia_excel)
+        df_metodologias["Index_normalizado"] = df_metodologias["Index"].astype(str).str.strip().str.lower()
+
+        def corrigir_simbolo_grau(texto):
+            return re.sub(r'(?<=\d)o(?=[A-Za-z-])', '°', texto)
+
+        index_name_normalizado = indice_escolhido.strip().lower()
+        linha = df_metodologias[df_metodologias["Index_normalizado"] == index_name_normalizado]
+
         # Caso especial para MJO
         if indice_escolhido_label == "MJO":
-            # Carrega amplitude_mjo.txt
             amplitude_path = base_path / "dataset" / "amplitude_mjo.txt"
             fase_path = base_path / "dataset" / "fase_mjo.txt"
             if amplitude_path.exists() and fase_path.exists():
@@ -253,8 +262,62 @@ with tab2:
 
                 st.plotly_chart(fig_amp, use_container_width=True)
                 st.plotly_chart(fig_fase, use_container_width=True)
+
+                # -----------------------------
+                # Botão para download dos dados
+                # -----------------------------
+                st.markdown("<h2 style='font-size:24px; color:black;'>📥 Download data</h2>", unsafe_allow_html=True)
+                file_format = st.selectbox("Choose file format:", options=["CSV (.csv)", "Text (.txt)"], key="mjo_download_format")
+                base_filename_amp = "MJO_amplitude_data"
+                base_filename_fase = "MJO_phase_data"
+
+                if file_format == "CSV (.csv)":
+                    data_to_download_amp = df_amp.to_csv(index=False).encode("utf-8")
+                    data_to_download_fase = df_fase.to_csv(index=False).encode("utf-8")
+                    mime_type = "text/csv"
+                    file_name_amp = f"{base_filename_amp}.csv"
+                    file_name_fase = f"{base_filename_fase}.csv"
+                else:
+                    data_to_download_amp = df_amp.to_csv(index=False, sep="\t").encode("utf-8")
+                    data_to_download_fase = df_fase.to_csv(index=False, sep="\t").encode("utf-8")
+                    mime_type = "text/plain"
+                    file_name_amp = f"{base_filename_amp}.txt"
+                    file_name_fase = f"{base_filename_fase}.txt"
+
+                st.download_button(
+                    label="⬇️ Download amplitude file",
+                    data=data_to_download_amp,
+                    file_name=file_name_amp,
+                    mime=mime_type,
+                    help="Click to download the MJO amplitude data in the chosen format."
+                )
+                st.download_button(
+                    label="⬇️ Download phase file",
+                    data=data_to_download_fase,
+                    file_name=file_name_fase,
+                    mime=mime_type,
+                    help="Click to download the MJO phase data in the chosen format."
+                )
+
+                # -----------------------------
+                # Explicar metodologia
+                # -----------------------------
+                st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>", unsafe_allow_html=True)
+                if not linha.empty:
+                    metodologia_texto = linha["Methodology"].values[0]
+                    acesso = linha["Access"].values[0]
+                    referencia = linha["Reference"].values[0]
+                    metodologia_texto_corrigido = corrigir_simbolo_grau(metodologia_texto)
+
+                    st.markdown(f"<p style='text-align: justify;'> {metodologia_texto_corrigido}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='text-align: justify;'><strong>🔗 Access:</strong> {acesso}</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='text-align: justify;'><strong>📚 Reference:</strong> {referencia}</p>", unsafe_allow_html=True)
+                else:
+                    st.markdown(f"⏳ Methodology for the **{indice_escolhido}** index under development.")
+
             else:
                 st.warning("MJO data files not found.")
+
         else:
             # Filtra o DataFrame correspondente ao índice selecionado
             df = next((data.copy() for var, data in list_dataset if var == indice_escolhido), None)
@@ -275,16 +338,6 @@ with tab2:
                     go.Bar(x=df_pos["time"], y=df_pos["value"], marker_color="red", name="Positive"),
                     go.Bar(x=df_neg["time"], y=df_neg["value"], marker_color="blue", name="Negative")
                 ])
-
-                metodologia_excel = base_path / "Metodologias.xlsx"
-                df_metodologias = pd.read_excel(metodologia_excel)
-                df_metodologias["Index_normalizado"] = df_metodologias["Index"].astype(str).str.strip().str.lower()
-
-                def corrigir_simbolo_grau(texto):
-                    return re.sub(r'(?<=\d)o(?=[A-Za-z-])', '°', texto)
-
-                index_name_normalizado = indice_escolhido.strip().lower()
-                linha = df_metodologias[df_metodologias["Index_normalizado"] == index_name_normalizado]
 
                 full_index_name = linha["Name_Index"].values[0] if not linha.empty else indice_escolhido
                 title_axis_y = indice_escolhido
@@ -325,7 +378,7 @@ with tab2:
             # -----------------------------
             st.markdown("<h2 style='font-size:24px; color:black;'>📥 Download data</h2>", unsafe_allow_html=True)
 
-            file_format = st.selectbox("Choose file format:", options=["CSV (.csv)", "Text (.txt)"])
+            file_format = st.selectbox("Choose file format:", options=["CSV (.csv)", "Text (.txt)"], key="other_download_format")
             base_filename = f"{indice_escolhido}_indice data"
 
             if file_format == "CSV (.csv)":
