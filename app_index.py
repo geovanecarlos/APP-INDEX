@@ -24,7 +24,7 @@ if __name__ == "__main__":
 display_order = [
     "AAO", "PSA1", "PSA2", "AO", "PNA", "NAO", "DMI/IOD", "IOSD",
     "NINO12", "NINO3", "NINO34", "NINO4", "SOI", "TNA", "TSA", "SASAI",
-    "SSTRG2", "SAODI", "SASDI", "ONI", "QBO", "PDO", "AMO", "MJO*"
+    "SSTRG2", "SAODI", "SASDI", "ONI", "QBO", "PDO", "AMO", "MJO"
 ]
 
 # Mapeamento rótulos -> nomes reais nos dados
@@ -34,7 +34,7 @@ alias = {
     "NINO34": "NIN34",
     "NINO4":  "NIN04",
     "DNI/IOD": "DMI/IOD",
-    "MJO*": "MJO"
+    "MJO": "MJO"
 }
 
 # Diretório da pasta do projeto
@@ -190,69 +190,135 @@ with tab2:
         indice_escolhido_label = st.sidebar.selectbox("Select index:", display_order)
         indice_escolhido = alias.get(indice_escolhido_label, indice_escolhido_label)
 
-        # Filtra o DataFrame correspondente ao índice selecionado
-        df = next((data.copy() for var, data in list_dataset if var == indice_escolhido), None)
-        if df is not None:
-            df.columns = ["time", "value"]
-            df["time"] = pd.to_datetime(df["time"], errors='coerce')
-            df.dropna(subset=["time"], inplace=True)
-            df.sort_values("time", inplace=True)
+        # Caso especial para MJO
+        if indice_escolhido_label == "MJO":
+            # Carrega amplitude_mjo.txt
+            amplitude_path = base_path / "dataset" / "amplitude_mjo.txt"
+            fase_path = base_path / "dataset" / "fase_mjo.txt"
+            if amplitude_path.exists() and fase_path.exists():
+                df_amp = pd.read_csv(amplitude_path, sep="\t")
+                df_fase = pd.read_csv(fase_path, sep="\t")
 
-            # Separar positivos e negativos
-            df_pos = df.copy()
-            df_neg = df.copy()
-            df_pos["value"] = df_pos["value"].clip(lower=0)
-            df_neg["value"] = df_neg["value"].clip(upper=0)
+                # Gráfico 1: Amplitude
+                df_amp.columns = ["time", "amplitude"]
+                df_amp["time"] = pd.to_datetime(df_amp["time"], errors='coerce')
+                df_amp.dropna(subset=["time"], inplace=True)
+                df_amp.sort_values("time", inplace=True)
 
-            # Plotagem utilizando o Plotly
-            fig = go.Figure([
-                go.Bar(x=df_pos["time"], y=df_pos["value"], marker_color="red", name="Positive"),
-                go.Bar(x=df_neg["time"], y=df_neg["value"], marker_color="blue", name="Negative")
-            ])
-
-            metodologia_excel = base_path / "Metodologias.xlsx"
-            df_metodologias = pd.read_excel(metodologia_excel)
-            df_metodologias["Index_normalizado"] = df_metodologias["Index"].astype(str).str.strip().str.lower()
-
-            def corrigir_simbolo_grau(texto):
-                return re.sub(r'(?<=\d)o(?=[A-Za-z-])', '°', texto)
-
-            index_name_normalizado = indice_escolhido.strip().lower()
-            linha = df_metodologias[df_metodologias["Index_normalizado"] == index_name_normalizado]
-
-            full_index_name = linha["Name_Index"].values[0] if not linha.empty else indice_escolhido
-            title_axis_y = indice_escolhido
-
-            fig.update_layout(
-                title=f"{full_index_name} ({indice_escolhido}) - Monthly",
-                showlegend=False,
-                bargap=0,
-                height=500,
-                xaxis=dict(
-                    title=dict(text="Date", font=dict(color="black")),
-                    tickfont=dict(color="black"),
-                    rangeselector=dict(
-                        font=dict(color="black"),
-                        buttons=[
-                            dict(step="all", label="All"),
-                            dict(count=30, label="30 years", step="year", stepmode="backward"),
-                            dict(count=20, label="20 years", step="year", stepmode="backward"),
-                            dict(count=10, label="10 years", step="year", stepmode="backward"),
-                            dict(count=5, label="5 years", step="year", stepmode="backward"),
-                            dict(count=1, label="1 year", step="year", stepmode="backward")
-                        ]
+                fig_amp = go.Figure([
+                    go.Scatter(x=df_amp["time"], y=df_amp["amplitude"], mode="lines", line=dict(color="purple"))
+                ])
+                fig_amp.update_layout(
+                    title="MJO Amplitude (Daily)",
+                    showlegend=False,
+                    height=350,
+                    xaxis=dict(
+                        title=dict(text="Date", font=dict(color="black")),
+                        tickfont=dict(color="black"),
+                        rangeslider=dict(visible=True),
+                        type="date"
                     ),
-                    rangeslider=dict(visible=True),
-                    type="date"
-                ),
-                yaxis=dict(
-                    title=dict(text=title_axis_y, font=dict(color="black")),
-                    tickfont=dict(color="black")
+                    yaxis=dict(
+                        title=dict(text="Amplitude", font=dict(color="black")),
+                        tickfont=dict(color="black")
+                    )
                 )
-            )
+                fig_amp.update_traces(hovertemplate="Date: %{x|%d %b %Y}<br>Amplitude: %{y:.2f}")
 
-            fig.update_traces(hovertemplate="Date: %{x|%b %Y}<br>Value: %{y:.2f}")
-            st.plotly_chart(fig, use_container_width=True)
+                # Gráfico 2: Fase
+                df_fase.columns = ["time", "phase"]
+                df_fase["time"] = pd.to_datetime(df_fase["time"], errors='coerce')
+                df_fase.dropna(subset=["time"], inplace=True)
+                df_fase.sort_values("time", inplace=True)
+
+                fig_fase = go.Figure([
+                    go.Scatter(x=df_fase["time"], y=df_fase["phase"], mode="lines", line=dict(color="orange"))
+                ])
+                fig_fase.update_layout(
+                    title="MJO Phase (Daily)",
+                    showlegend=False,
+                    height=350,
+                    xaxis=dict(
+                        title=dict(text="Date", font=dict(color="black")),
+                        tickfont=dict(color="black"),
+                        rangeslider=dict(visible=True),
+                        type="date"
+                    ),
+                    yaxis=dict(
+                        title=dict(text="Phase", font=dict(color="black")),
+                        tickfont=dict(color="black")
+                    )
+                )
+                fig_fase.update_traces(hovertemplate="Date: %{x|%d %b %Y}<br>Phase: %{y}")
+
+                st.plotly_chart(fig_amp, use_container_width=True)
+                st.plotly_chart(fig_fase, use_container_width=True)
+            else:
+                st.warning("MJO data files not found.")
+        else:
+            # Filtra o DataFrame correspondente ao índice selecionado
+            df = next((data.copy() for var, data in list_dataset if var == indice_escolhido), None)
+            if df is not None:
+                df.columns = ["time", "value"]
+                df["time"] = pd.to_datetime(df["time"], errors='coerce')
+                df.dropna(subset=["time"], inplace=True)
+                df.sort_values("time", inplace=True)
+
+                # Separar positivos e negativos
+                df_pos = df.copy()
+                df_neg = df.copy()
+                df_pos["value"] = df_pos["value"].clip(lower=0)
+                df_neg["value"] = df_neg["value"].clip(upper=0)
+
+                # Plotagem utilizando o Plotly
+                fig = go.Figure([
+                    go.Bar(x=df_pos["time"], y=df_pos["value"], marker_color="red", name="Positive"),
+                    go.Bar(x=df_neg["time"], y=df_neg["value"], marker_color="blue", name="Negative")
+                ])
+
+                metodologia_excel = base_path / "Metodologias.xlsx"
+                df_metodologias = pd.read_excel(metodologia_excel)
+                df_metodologias["Index_normalizado"] = df_metodologias["Index"].astype(str).str.strip().str.lower()
+
+                def corrigir_simbolo_grau(texto):
+                    return re.sub(r'(?<=\d)o(?=[A-Za-z-])', '°', texto)
+
+                index_name_normalizado = indice_escolhido.strip().lower()
+                linha = df_metodologias[df_metodologias["Index_normalizado"] == index_name_normalizado]
+
+                full_index_name = linha["Name_Index"].values[0] if not linha.empty else indice_escolhido
+                title_axis_y = indice_escolhido
+
+                fig.update_layout(
+                    title=f"{full_index_name} ({indice_escolhido}) - Monthly",
+                    showlegend=False,
+                    bargap=0,
+                    height=500,
+                    xaxis=dict(
+                        title=dict(text="Date", font=dict(color="black")),
+                        tickfont=dict(color="black"),
+                        rangeselector=dict(
+                            font=dict(color="black"),
+                            buttons=[
+                                dict(step="all", label="All"),
+                                dict(count=30, label="30 years", step="year", stepmode="backward"),
+                                dict(count=20, label="20 years", step="year", stepmode="backward"),
+                                dict(count=10, label="10 years", step="year", stepmode="backward"),
+                                dict(count=5, label="5 years", step="year", stepmode="backward"),
+                                dict(count=1, label="1 year", step="year", stepmode="backward")
+                            ]
+                        ),
+                        rangeslider=dict(visible=True),
+                        type="date"
+                    ),
+                    yaxis=dict(
+                        title=dict(text=title_axis_y, font=dict(color="black")),
+                        tickfont=dict(color="black")
+                    )
+                )
+
+                fig.update_traces(hovertemplate="Date: %{x|%b %Y}<br>Value: %{y:.2f}")
+                st.plotly_chart(fig, use_container_width=True)
 
             # -----------------------------
             # Botão para download dos dados
@@ -295,8 +361,6 @@ with tab2:
                 st.markdown(f"<p style='text-align: justify;'><strong>📚 Reference:</strong> {referencia}</p>", unsafe_allow_html=True)
             else:
                 st.markdown(f"⏳ Methodology for the **{indice_escolhido}** index under development.")
-        else:
-            st.warning("Could not prepare data for download.")
-
+                
     if __name__ == "__main__":
         plot_indices()
