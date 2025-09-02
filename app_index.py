@@ -214,16 +214,30 @@ with tab2:
                 df_amp.dropna(subset=["time"], inplace=True)
                 df_amp.sort_values("time", inplace=True)
 
+                # ---------------- FIGURA AMPLITUDE ----------------
                 fig_amp = go.Figure([
-                    go.Scatter(x=df_amp["time"], y=df_amp["amplitude"], mode="lines", line=dict(color="purple"))
+                    go.Bar(x=df_amp["time"], y=df_amp["amplitude"], marker_color="purple", name="Amplitude")
                 ])
+
                 fig_amp.update_layout(
                     title="MJO Amplitude (Daily)",
                     showlegend=False,
-                    height=350,
+                    bargap=0,
+                    height=500,
                     xaxis=dict(
                         title=dict(text="Date", font=dict(color="black")),
                         tickfont=dict(color="black"),
+                        rangeselector=dict(
+                            font=dict(color="black"),
+                            buttons=[
+                                dict(step="all", label="All"),
+                                dict(count=30, label="30 years", step="year", stepmode="backward"),
+                                dict(count=20, label="20 years", step="year", stepmode="backward"),
+                                dict(count=10, label="10 years", step="year", stepmode="backward"),
+                                dict(count=5, label="5 years", step="year", stepmode="backward"),
+                                dict(count=1, label="1 year", step="year", stepmode="backward")
+                            ]
+                        ),
                         rangeslider=dict(visible=True),
                         type="date"
                     ),
@@ -232,24 +246,37 @@ with tab2:
                         tickfont=dict(color="black")
                     )
                 )
-                fig_amp.update_traces(hovertemplate="Date: %{x|%d %b %Y}<br>Amplitude: %{y:.2f}")
+                fig_amp.update_traces(hovertemplate="Date: %{x|%b %Y}<br>Amplitude: %{y:.2f}")
 
-                # Gráfico 2: Fase
+                # ---------------- FIGURA FASE ----------------
                 df_fase.columns = ["time", "phase"]
                 df_fase["time"] = pd.to_datetime(df_fase["time"], errors='coerce')
                 df_fase.dropna(subset=["time"], inplace=True)
                 df_fase.sort_values("time", inplace=True)
 
                 fig_fase = go.Figure([
-                    go.Scatter(x=df_fase["time"], y=df_fase["phase"], mode="lines", line=dict(color="purple"))
+                    go.Bar(x=df_fase["time"], y=df_fase["phase"], marker_color="orange", name="Phase")
                 ])
+
                 fig_fase.update_layout(
                     title="MJO Phase (Daily)",
                     showlegend=False,
-                    height=350,
+                    bargap=0,
+                    height=500,
                     xaxis=dict(
                         title=dict(text="Date", font=dict(color="black")),
                         tickfont=dict(color="black"),
+                        rangeselector=dict(
+                            font=dict(color="black"),
+                            buttons=[
+                                dict(step="all", label="All"),
+                                dict(count=30, label="30 years", step="year", stepmode="backward"),
+                                dict(count=20, label="20 years", step="year", stepmode="backward"),
+                                dict(count=10, label="10 years", step="year", stepmode="backward"),
+                                dict(count=5, label="5 years", step="year", stepmode="backward"),
+                                dict(count=1, label="1 year", step="year", stepmode="backward")
+                            ]
+                        ),
                         rangeslider=dict(visible=True),
                         type="date"
                     ),
@@ -258,7 +285,7 @@ with tab2:
                         tickfont=dict(color="black")
                     )
                 )
-                fig_fase.update_traces(hovertemplate="Date: %{x|%d %b %Y}<br>Phase: %{y}")
+                fig_fase.update_traces(hovertemplate="Date: %{x|%b %Y}<br>Phase: %{y}")
 
                 st.plotly_chart(fig_amp, use_container_width=True)
                 st.plotly_chart(fig_fase, use_container_width=True)
