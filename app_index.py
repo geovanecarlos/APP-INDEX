@@ -241,7 +241,7 @@ with tab2:
                 df_fase.sort_values("time", inplace=True)
 
                 fig_fase = go.Figure([
-                    go.Scatter(x=df_fase["time"], y=df_fase["phase"], mode="lines", line=dict(color="orange"))
+                    go.Scatter(x=df_fase["time"], y=df_fase["phase"], mode="lines", line=dict(color="purple"))
                 ])
                 fig_fase.update_layout(
                     title="MJO Phase (Daily)",
