@@ -27,6 +27,13 @@ display_order = [
     "SSTRG2", "SAODI", "SASDI", "ONI", "QBO", "PDO", "AMO", "MJO"
 ]
 
+
+display_order_tab = [
+    "AAO", "PSA1", "PSA2", "AO", "PNA", "NAO", "DMI/IOD", "IOSD",
+    "NINO12", "NINO3", "NINO34", "NINO4", "SOI", "TNA", "TSA", "SASAI",
+    "SSTRG2", "SAODI", "SASDI", "ONI", "QBO", "PDO", "AMO", "Amplitude MJO", "Phase MJO"
+]
+
 # Mapeamento rótulos -> nomes reais nos dados
 alias = {
     "NINO12": "NIN12",
@@ -34,7 +41,8 @@ alias = {
     "NINO34": "NIN34",
     "NINO4":  "NIN04",
     "DNI/IOD": "DMI/IOD",
-    "MJO": "MJO"
+    "Amplitude MJO": "Amplitude MJO/RMM",
+    "Phase MJO": "Fase MJO/RMM"
 }
 
 # Diretório da pasta do projeto
@@ -143,8 +151,8 @@ with tab1:
                     return last_values[k]
             return "-"
 
-        # quebra em 3 linhas com 8 colunas cada, mantendo a ordem fixa
-        rows = [display_order[i:i + 8] for i in range(0, len(display_order), 8)]
+        # quebra em 3 linhas com 9 colunas cada, mantendo a ordem fixa
+        rows = [display_order_tab[i:i + 8] for i in range(0, len(display_order_tab), 9)]
 
         formatted_date = last_date.strftime("%B %Y") if last_date else "Last month"
 
@@ -190,9 +198,15 @@ with tab2:
         indice_escolhido_label = st.sidebar.selectbox("Select index:", display_order)
         indice_escolhido = alias.get(indice_escolhido_label, indice_escolhido_label)
 
+        # Carrega metodologias apenas uma vez e normaliza coluna
+        @st.cache_data
+        def load_metodologias(path):
+            df = pd.read_excel(path)
+            df["Index_normalizado"] = df["Index"].astype(str).str.strip().str.lower()
+            return df
+
         metodologia_excel = base_path / "Metodologias.xlsx"
-        df_metodologias = pd.read_excel(metodologia_excel)
-        df_metodologias["Index_normalizado"] = df_metodologias["Index"].astype(str).str.strip().str.lower()
+        df_metodologias = load_metodologias(metodologia_excel)
 
         def corrigir_simbolo_grau(texto):
             return re.sub(r'(?<=\d)o(?=[A-Za-z-])', '°', texto)
@@ -200,25 +214,31 @@ with tab2:
         index_name_normalizado = indice_escolhido.strip().lower()
         linha = df_metodologias[df_metodologias["Index_normalizado"] == index_name_normalizado]
 
+        # Cria um dicionário para acesso rápido aos datasets
+        @st.cache_data
+        def get_dataset_dict(list_dataset):
+            return {var: data for var, data in list_dataset}
+
+        dataset_dict = get_dataset_dict(list_dataset)
+
         # Caso especial para MJO
         if indice_escolhido_label == "MJO":
             amplitude_path = base_path / "dataset" / "amplitude_mjo.txt"
             fase_path = base_path / "dataset" / "fase_mjo.txt"
             if amplitude_path.exists() and fase_path.exists():
-                df_amp = pd.read_csv(amplitude_path, sep="\t")
-                df_fase = pd.read_csv(fase_path, sep="\t")
+                df_amp = pd.read_csv(amplitude_path, sep="\t", names=["time", "amplitude"], header=0)
+                df_fase = pd.read_csv(fase_path, sep="\t", names=["time", "phase"], header=0)
 
-                # Gráfico 1: Amplitude
-                df_amp.columns = ["time", "amplitude"]
-                df_amp["time"] = pd.to_datetime(df_amp["time"], errors='coerce')
-                df_amp.dropna(subset=["time"], inplace=True)
-                df_amp.sort_values("time", inplace=True)
+                # Processa datas
+                for df in [df_amp, df_fase]:
+                    df["time"] = pd.to_datetime(df["time"], errors='coerce')
+                    df.dropna(subset=["time"], inplace=True)
+                    df.sort_values("time", inplace=True)
 
                 # ---------------- FIGURA AMPLITUDE ----------------
                 fig_amp = go.Figure([
-                    go.Bar(x=df_amp["time"], y=df_amp["amplitude"], marker_color="purple", name="Amplitude")
+                    go.Bar(x=df_amp["time"], y=df_amp["amplitude"], marker_color="red", name="Amplitude")
                 ])
-
                 fig_amp.update_layout(
                     title="MJO Amplitude (Daily)",
                     showlegend=False,
@@ -246,18 +266,12 @@ with tab2:
                         tickfont=dict(color="black")
                     )
                 )
-                fig_amp.update_traces(hovertemplate="Date: %{x|%b %Y}<br>Amplitude: %{y:.2f}")
+                fig_amp.update_traces(hovertemplate="Date: %{x|%b-%d-%Y}<br>Amplitude: %{y:.2f}")
 
                 # ---------------- FIGURA FASE ----------------
-                df_fase.columns = ["time", "phase"]
-                df_fase["time"] = pd.to_datetime(df_fase["time"], errors='coerce')
-                df_fase.dropna(subset=["time"], inplace=True)
-                df_fase.sort_values("time", inplace=True)
-
                 fig_fase = go.Figure([
-                    go.Bar(x=df_fase["time"], y=df_fase["phase"], marker_color="orange", name="Phase")
+                    go.Bar(x=df_fase["time"], y=df_fase["phase"], marker_color="blue", name="Phase")
                 ])
-
                 fig_fase.update_layout(
                     title="MJO Phase (Daily)",
                     showlegend=False,
@@ -285,7 +299,7 @@ with tab2:
                         tickfont=dict(color="black")
                     )
                 )
-                fig_fase.update_traces(hovertemplate="Date: %{x|%b %Y}<br>Phase: %{y}")
+                fig_fase.update_traces(hovertemplate="Date: %{x|%b-%d-%Y}<br>Phase: %{y}")
 
                 st.plotly_chart(fig_amp, use_container_width=True)
                 st.plotly_chart(fig_fase, use_container_width=True)
@@ -346,9 +360,10 @@ with tab2:
                 st.warning("MJO data files not found.")
 
         else:
-            # Filtra o DataFrame correspondente ao índice selecionado
-            df = next((data.copy() for var, data in list_dataset if var == indice_escolhido), None)
+            # Busca o DataFrame correspondente ao índice selecionado via dicionário
+            df = dataset_dict.get(indice_escolhido)
             if df is not None:
+                df = df.copy()
                 df.columns = ["time", "value"]
                 df["time"] = pd.to_datetime(df["time"], errors='coerce')
                 df.dropna(subset=["time"], inplace=True)
