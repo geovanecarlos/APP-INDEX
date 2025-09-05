@@ -31,8 +31,10 @@ display_order = [
 display_order_tab = [
     "AAO", "PSA1", "PSA2", "AO", "PNA", "NAO", "DMI/IOD", "IOSD",
     "NINO12", "NINO3", "NINO34", "NINO4", "SOI", "TNA", "TSA", "SASAI",
-    "SSTRG2", "SAODI", "SASDI", "ONI", "QBO", "PDO", "AMO", "Amplitude MJO", "Phase MJO"
+    "SSTRG2", "SAODI", "SASDI", "ONI", "QBO", "PDO", "AMO"
 ]
+
+display_order_tab_mjo = ["Amplitude MJO", "Phase MJO"]
 
 # Mapeamento rótulos -> nomes reais nos dados
 alias = {
@@ -151,15 +153,28 @@ with tab1:
                     return last_values[k]
             return "-"
 
+        def get_from_last_values_mjo(label: str):
+            """Retorna o valor usando o rótulo desejado, respeitando alias e case-insensitive."""
+            key = alias.get(label, label)
+            if key in last_values:
+                return last_values[key]
+            for k in last_values.keys():
+                if k.casefold() == key.casefold():
+                    return last_values[k]
+                return "-"
+
         # quebra em 3 linhas com 9 colunas cada, mantendo a ordem fixa
-        rows = [display_order_tab[i:i + 8] for i in range(0, len(display_order_tab), 9)]
+        rows = [display_order_tab[i:i + 8] for i in range(0, len(display_order_tab), 8)]
+        rows_mjo = [display_order_tab_mjo[i:i + 2] for i in range(0, len(display_order_tab_mjo), 2)]
+
 
         formatted_date = last_date.strftime("%B %Y") if last_date else "Last month"
+        formatted_date_mjo = last_date.strftime("%B %dth %Y") if last_date else "Last month"
 
         # bloco HTML
         html = f"""
         <div style="background-color:#e3e2e2ff; padding:20px; border-radius:10px; color:black; font-family:monospace; text-align:center;">
-            <h4 style="color:black; margin-bottom:25px;">Last update: {formatted_date}</h4>
+            <h4 style="color:black; margin-bottom:25px;">Indices for {formatted_date}</h4>
         """
 
         for row in rows:
@@ -184,7 +199,35 @@ with tab1:
 
         html += "</div>"
 
+        html_mjo = f"""
+        <div style="background-color:#e3e2e2ff; padding:20px; border-radius:10px; color:black; font-family:monospace; text-align:center;">
+            <h4 style="color:black; margin-bottom:25px;">Indices for {formatted_date_mjo}</h4>
+        """
+
+        for row_mjo in rows_mjo:
+            html_mjo += "<table style='width:100%; border-collapse:collapse; margin-bottom:20px;'>"
+            # cabeçalho
+            html_mjo += "<tr>" + "".join(
+                f"<th style='padding:6px; font-size:16px; color:black;'>{label_mjo}</th>" for label_mjo in row_mjo
+            ) + "</tr>"
+
+            # valores
+            html_mjo += "<tr>"
+            for label_mjo in row_mjo:
+                val_mjo = get_from_last_values_mjo(label_mjo)
+                if val_mjo == "-":
+                    color = "black"
+                    display_val = "-"
+                else:
+                    color = "red" if val_mjo > 0 else "blue" if val_mjo < 0 else "black"
+                    display_val = f"{val_mjo:.2f}"
+                html_mjo += f"<td style='padding:6px; font-size:16px; font-weight:bold; color:{color};'>{display_val}</td>"
+            html_mjo += "</tr></table>"
+
+        html_mjo += "</div>"
+
         st.markdown(html, unsafe_allow_html=True)
+        st.markdown(html_mjo, unsafe_allow_html=True)
 
     if __name__ == "__main__":
         introducao()
