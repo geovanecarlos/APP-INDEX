@@ -95,15 +95,20 @@ with tab1:
         st.markdown(
             """
             <div style='text-align: justify'>
-            <b>Teleconnection Index Online Tool:</b> This is an interactive tool that compiles more than 15 teleconnection indices, updated monthly.
-            All indices are calculated using the same database and climatological period (1991–2020). Atmospheric variables are obtained from the ERA5 reanalysis,
-            provided by the European Centre for Medium-Range Weather Forecasts (ECMWF), while sea surface temperature (SST) data come from the Extended Reconstructed
-            Sea Surface Temperature (ERSST) version 5 database. Since the tool works with gridded data, the monthly climatology is first calculated for each grid point,
-            followed by the computation of the monthly anomaly at each grid point. The regional mean anomaly is then obtained by averaging the anomalies over the
-            selected area of interest. No trend removal is applied to the data.  ONI and indices for low-frequency variability (QBO, PDO and AMO) are obtained from
-            external sources. We also highlight that the MJO is a daily index, so it is displayed separately from the other indices. For each index,
-            you will find an interactive button that provides the plotted time series, the data in ASCII format, and a description of the methodology used in the 
-            alculation of the index. If you use this tool, please cite the following article: [insert article reference here]<br>
+            <b>Teleconnection Index Online Tool:</b> This is an interactive tool that compiles more than 15 teleconnection indices, 
+            updated monthly. All indices are calculated using the same database and climatological period (1991–2020). 
+            Atmospheric variables are obtained from the ERA5 reanalysis, provided by the European Centre for Medium-Range Weather Forecasts (ECMWF), 
+            while sea surface temperature (SST) data come from the Extended Reconstructed Sea Surface Temperature (ERSST) version 5 database. 
+            Since the tool works with gridded data, the monthly climatology is first calculated for each grid point, followed by the 
+            computation of the monthly anomaly at each grid point. The regional mean anomaly is then obtained by averaging the anomalies 
+            over the selected area of interest. No trend removal is applied to the data. ONI and indices for low-frequency variability (QBO, PDO and AMO)
+            are obtained from external sources. We also highlight that the MJO is a daily index, so it is displayed separately from the other indices. 
+            For each index, you will find an interactive button that provides the plotted time series, the data in ASCII format, and a description of the methodology used in the calculation of the index. If you use this tool, please cite the following article: [in review].<br><br>
+            <b>How to know if a mode is in its active phase?</b><br>
+        
+            We suggest that the user download the index time series, compute the monthly standard deviation for the month of interest,
+            and then check whether the index shown on the website is above or below ±1 standard deviation. If this condition is met,
+            the mode is considered to be in its active phase.
             </div>
             """, unsafe_allow_html=True
         )
@@ -124,7 +129,8 @@ with tab1:
         # ======================
 
         last_values = {}
-        last_date = None  # guardará a MAIOR data entre todos os índices
+        last_date = None 
+        last_date_mjo = None 
 
         for var, data in list_dataset:
             df_temp = data.copy()
@@ -136,10 +142,16 @@ with tab1:
             if not df_temp.empty:
                 last_row = df_temp.iloc[-1]
                 val = last_row["value"]
+                
+                # Armazena o valor arredondado ou "-" se for NaN    
                 last_values[var] = "-" if pd.isna(val) else round(val, 2)
-                # mantém a maior data observada
-                if last_date is None or last_row["time"] > last_date:
+                # Atualiza a maior data observada
+                if last_date is None or last_row["time"] == last_date:
                     last_date = last_row["time"]
+                # Atualiza a maior data MJO se for MJO
+                if "MJO" in var.upper():
+                    if last_date_mjo is None or last_row["time"] > last_date_mjo:
+                        last_date_mjo = last_row["time"]
             else:
                 last_values[var] = "-"
 
@@ -167,9 +179,8 @@ with tab1:
         rows = [display_order_tab[i:i + 8] for i in range(0, len(display_order_tab), 8)]
         rows_mjo = [display_order_tab_mjo[i:i + 2] for i in range(0, len(display_order_tab_mjo), 2)]
 
-
         formatted_date = last_date.strftime("%B %Y") if last_date else "Last month"
-        formatted_date_mjo = last_date.strftime("%B %dth %Y") if last_date else "Last month"
+        formatted_date_mjo = last_date_mjo.strftime("%B %dth %Y") if last_date else "Last month"
 
         # bloco HTML
         html = f"""
@@ -294,11 +305,11 @@ with tab2:
                             font=dict(color="black"),
                             buttons=[
                                 dict(step="all", label="All"),
-                                dict(count=30, label="30 years", step="year", stepmode="backward"),
-                                dict(count=20, label="20 years", step="year", stepmode="backward"),
-                                dict(count=10, label="10 years", step="year", stepmode="backward"),
-                                dict(count=5, label="5 years", step="year", stepmode="backward"),
-                                dict(count=1, label="1 year", step="year", stepmode="backward")
+                                dict(count=1, label="1 year", step="year", stepmode="backward"),
+                                dict(count=6, label="6 months", step="month", stepmode="backward"),
+                                dict(count=3, label="3 months", step="month", stepmode="backward"),
+                                dict(count=1, label="1 month", step="month", stepmode="backward")
+
                             ]
                         ),
                         rangeslider=dict(visible=True),
@@ -327,11 +338,10 @@ with tab2:
                             font=dict(color="black"),
                             buttons=[
                                 dict(step="all", label="All"),
-                                dict(count=30, label="30 years", step="year", stepmode="backward"),
-                                dict(count=20, label="20 years", step="year", stepmode="backward"),
-                                dict(count=10, label="10 years", step="year", stepmode="backward"),
-                                dict(count=5, label="5 years", step="year", stepmode="backward"),
-                                dict(count=1, label="1 year", step="year", stepmode="backward")
+                                dict(count=1, label="1 year", step="year", stepmode="backward"),
+                                dict(count=6, label="6 months", step="month", stepmode="backward"),
+                                dict(count=3, label="3 months", step="month", stepmode="backward"),
+                                dict(count=1, label="1 month", step="month", stepmode="backward")
                             ]
                         ),
                         rangeslider=dict(visible=True),
