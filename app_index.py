@@ -180,7 +180,7 @@ with tab1:
         rows_mjo = [display_order_tab_mjo[i:i + 2] for i in range(0, len(display_order_tab_mjo), 2)]
 
         formatted_date = last_date.strftime("%B %Y") if last_date else "Last month"
-        formatted_date_mjo = last_date_mjo.strftime("%B %dth %Y") if last_date else "Last month"
+        formatted_date_mjo = last_date_mjo.strftime("%B %dth %Y") if last_date_mjo else "Last month"
 
         # bloco HTML
         html = f"""
