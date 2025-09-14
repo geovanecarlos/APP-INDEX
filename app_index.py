@@ -214,14 +214,14 @@ with tab1:
         <div style="background-color:#e3e2e2ff; padding:20px; border-radius:10px; color:black; font-family:monospace; text-align:center;">
             <h4 style="color:black; margin-bottom:25px;">Indices for {formatted_date_mjo}</h4>
         """
-
+        print(formatted_date_mjo)
         for row_mjo in rows_mjo:
             html_mjo += "<table style='width:100%; border-collapse:collapse; margin-bottom:20px;'>"
             # cabeçalho
             html_mjo += "<tr>" + "".join(
                 f"<th style='padding:6px; font-size:16px; color:black;'>{label_mjo}</th>" for label_mjo in row_mjo
             ) + "</tr>"
-
+            
             # valores
             html_mjo += "<tr>"
             for label_mjo in row_mjo:
@@ -233,8 +233,9 @@ with tab1:
                     color = "red" if val_mjo > 0 else "blue" if val_mjo < 0 else "black"
                     display_val = f"{val_mjo:.2f}"
                 html_mjo += f"<td style='padding:6px; font-size:16px; font-weight:bold; color:{color};'>{display_val}</td>"
+                print(label_mjo, val_mjo)
             html_mjo += "</tr></table>"
-
+            
         html_mjo += "</div>"
 
         st.markdown(html, unsafe_allow_html=True)
