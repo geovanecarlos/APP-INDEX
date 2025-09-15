@@ -240,8 +240,7 @@ with tab1:
 
         st.markdown(html, unsafe_allow_html=True)
         st.markdown(html_mjo, unsafe_allow_html=True)
-        # Exibe os valores dos dois índices MJO juntos
-        st.markdown(f"{formatted_date_mjo}, {rows_mjo[0][0]}: {get_from_last_values_mjo(rows_mjo[0][0])}, {rows_mjo[0][1]}: {get_from_last_values_mjo(rows_mjo[0][1])}")
+        #st.markdown(f"{formatted_date_mjo}, {rows_mjo[0][0]}: {get_from_last_values_mjo(rows_mjo[0][0])}, {rows_mjo[0][1]}: {get_from_last_values_mjo(rows_mjo[0][1])}")
 
     if __name__ == "__main__":
         introducao()
