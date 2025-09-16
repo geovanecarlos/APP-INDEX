@@ -228,11 +228,11 @@ with tab1:
                 val_mjo = get_from_last_values_mjo(label_mjo)
                 if val_mjo == "-":
                     color = "black"
-                    display_val = "-"
+                    display_val_mjo = "-"
                 else:
                     color = "red" if val_mjo > 0 else "blue" if val_mjo < 0 else "black"
-                    display_val = f"{val_mjo:.2f}"
-                html_mjo += f"<td style='padding:6px; font-size:16px; font-weight:bold; color:{color};'>{display_val}</td>"
+                    display_val_mjo = f"{val_mjo:.2f}"
+                html_mjo += f"<td style='padding:6px; font-size:16px; font-weight:bold; color:{color};'>{display_val_mjo}</td>"
                 print(label_mjo, val_mjo)
             html_mjo += "</tr></table>"
             
