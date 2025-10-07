@@ -105,7 +105,7 @@ with tab1:
             are obtained from external sources. We also highlight that the MJO is a daily index, so it is displayed separately from the other indices. 
             For each index, you will find an interactive button that provides the plotted time series, the data in ASCII format, and a description of the
             methodology used in the calculation of the index. If you use this tool, please cite the following article:
-            <p><em>Drumond, A.; Nogueira, N. C. O; Reboita, M. S.; Miguel, G. C. (2025). Teleconnection Indices: an updated version for the current climate. In review in CLIVAR Exchange.</em></p><br><br>
+            <p><em>Drumond, A.; Nogueira, N. C. O; Reboita, M. S.; Miguel, G. C. (2025). Teleconnection Indices: an updated version for the current climate. In review in CLIVAR Exchange.</em></p>
             
             <b>How to know if a mode is in its active phase?</b><br>
         
