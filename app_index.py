@@ -104,9 +104,7 @@ with tab1:
             over the selected area of interest. No trend removal is applied to the data. ONI and indices for low-frequency variability (QBO, PDO and AMO)
             are obtained from external sources. We also highlight that the MJO is a daily index, so it is displayed separately from the other indices. 
             For each index, you will find an interactive button that provides the plotted time series, the data in ASCII format, and a description of the
-            methodology used in the calculation of the index. If you use this tool, please cite the following article:<p><em>Drumond, A.; 
-            Nogueira, N. C. O; Reboita, M. S.; Miguel, G. C. (2025).
-              Teleconnection Indices: an updated version for the current climate. <br>In review in CLIVAR Exchange</em></p>.<br><br>
+            methodology used in the calculation of the index. If you use this tool, please cite the following article:<p><em>Drumond, A.; Nogueira, N. C. O; Reboita, M. S.; Miguel, G. C. (2025). Teleconnection Indices: an updated version for the current climate.<br>In review in CLIVAR Exchange</em></p>.<br><br>
             <b>How to know if a mode is in its active phase?</b><br>
         
             We suggest that the user download the index time series, compute the monthly standard deviation for the month of interest,
