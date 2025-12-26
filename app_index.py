@@ -24,14 +24,14 @@ if __name__ == "__main__":
 display_order = [
     "AAO", "PSA1", "PSA2", "AO", "PNA", "NAO", "DMI/IOD", "IOSD",
     "NINO12", "NINO3", "NINO34", "NINO4", "SOI", "TNA", "TSA", "SASAI",
-    "SSTRG2", "SAODI", "SASDI", "ONI", "QBO", "PDO", "AMO", "MJO"
+    "SSTRG2", "SAODI", "SASDI",  "SAD", "SWSA","ONI", "QBO", "PDO", "AMO", "MJO"
 ]
 
 
 display_order_tab = [
     "AAO", "PSA1", "PSA2", "AO", "PNA", "NAO", "DMI/IOD", "IOSD",
     "NINO12", "NINO3", "NINO34", "NINO4", "SOI", "TNA", "TSA", "SASAI",
-    "SSTRG2", "SAODI", "SASDI", "ONI", "QBO", "PDO", "AMO"
+    "SSTRG2", "SAODI", "SASDI", "SAD", "SWSA","ONI", "QBO", "PDO", "AMO"
 ]
 
 display_order_tab_mjo = ["Amplitude MJO", "Phase MJO"]
