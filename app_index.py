@@ -130,7 +130,7 @@ with tab1:
         st.markdown(horizontal_bar, True)
 
         # ======================
-        # TABELA ESTILO IMAGEM
+        # TABELA DE RESUMO DOS INDICES
         # ======================
 
         last_values = {}
@@ -181,7 +181,7 @@ with tab1:
                 return "-"
 
         # quebra em 3 linhas com 9 colunas cada, mantendo a ordem fixa
-        rows = [display_order_tab[i:i + 8] for i in range(0, len(display_order_tab), 8)]
+        rows = [display_order_tab[i:i + 9] for i in range(0, len(display_order_tab), 9)]
         rows_mjo = [display_order_tab_mjo[i:i + 2] for i in range(0, len(display_order_tab_mjo), 2)]
 
         formatted_date = last_date.strftime("%B %Y") if last_date else "Last month"
