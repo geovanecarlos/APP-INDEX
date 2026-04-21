@@ -137,6 +137,20 @@ with tab1:
         last_date = None 
         last_date_mjo = None 
 
+        # Primeiro, encontra a data mais recente entre os índices NÃO-MJO
+        latest_date_non_mjo = None
+        for var, data in list_dataset:
+            if "MJO" in var.upper():
+                continue
+            df_temp = data.copy()
+            df_temp.columns = ["time", "value"]
+            df_temp["time"] = pd.to_datetime(df_temp["time"], errors='coerce')
+            df_temp.dropna(subset=["time"], inplace=True)
+            if not df_temp.empty:
+                max_date = df_temp["time"].max()
+                if latest_date_non_mjo is None or max_date > latest_date_non_mjo:
+                    latest_date_non_mjo = max_date
+
         for var, data in list_dataset:
             df_temp = data.copy()
             df_temp.columns = ["time", "value"]
@@ -148,15 +162,25 @@ with tab1:
                 last_row = df_temp.iloc[-1]
                 val = last_row["value"]
                 
-                # Armazena o valor arredondado ou "-" se for NaN    
-                last_values[var] = "-" if pd.isna(val) else round(val, 2)
-                # Atualiza a maior data observada
-                if last_date is None or last_row["time"] == last_date:
-                    last_date = last_row["time"]
-                # Atualiza a maior data MJO se for MJO
+                # MODIFICAÇÃO: Para índices não-MJO, verificar se tem dado na data mais recente
                 if "MJO" in var.upper():
+                    # MJO mantém comportamento original
+                    last_values[var] = "-" if pd.isna(val) else round(val, 2)
                     if last_date_mjo is None or last_row["time"] > last_date_mjo:
                         last_date_mjo = last_row["time"]
+                else:
+                    # Verifica se o índice tem dado exatamente na data mais recente
+                    if latest_date_non_mjo is not None:
+                        if (last_row["time"].year == latest_date_non_mjo.year and 
+                            last_row["time"].month == latest_date_non_mjo.month):
+                            last_values[var] = "-" if pd.isna(val) else round(val, 2)
+                        else:
+                            last_values[var] = "-"
+                    else:
+                        last_values[var] = "-" if pd.isna(val) else round(val, 2)
+                    
+                    if last_date is None or last_row["time"] == last_date:
+                        last_date = latest_date_non_mjo
             else:
                 last_values[var] = "-"
 
@@ -185,7 +209,7 @@ with tab1:
         rows_mjo = [display_order_tab_mjo[i:i + 2] for i in range(0, len(display_order_tab_mjo), 2)]
 
         formatted_date = last_date.strftime("%B %Y") if last_date else "Last month"
-        formatted_date_mjo = last_date_mjo.strftime("%B %dth %Y") if last_date_mjo else "Last month"
+        formatted_date_mjo = last_date_mjo.strftime("%B %dth, %Y") if last_date_mjo else "Last month"
 
         # bloco HTML
         html = f"""
@@ -198,7 +222,7 @@ with tab1:
             # cabeçalho
             html += "<tr>" + "".join(
                 f"<th style='padding:6px; font-size:16px; color:black;'>{label}</th>" for label in row
-            ) + "</tr>"
+            ) + "<tr>"
 
             # valores
             html += "<tr>"
@@ -239,7 +263,7 @@ with tab1:
                     display_val_mjo = f"{val_mjo:.2f}"
                 html_mjo += f"<td style='padding:6px; font-size:16px; font-weight:bold; color:{color};'>{display_val_mjo}</td>"
                 print(label_mjo, val_mjo)
-            html_mjo += "</tr></table>"
+            html_mjo += "<tr></tr>"
             
         html_mjo += "</div>"
 
@@ -257,6 +281,18 @@ with tab2:
         # Selectbox usando a mesma ordem da tabela
         indice_escolhido_label = st.sidebar.selectbox("Select index:", display_order)
         indice_escolhido = alias.get(indice_escolhido_label, indice_escolhido_label)
+
+        # ======================
+        # BOTÃO DO ATLAS
+        # ======================
+        st.sidebar.markdown("<p style='margin-bottom: 0px; margin-top: 10px; color: black; font-weight: normal;'>Atlas</p>", unsafe_allow_html=True)
+        st.sidebar.markdown(
+            f'<a href="https://meteorologia.unifei.edu.br/tiot-atlas/" target="_blank" style="text-decoration: none;">'
+            f'<div style="background-color:#001f3f; color:white; padding:8px 24px; '
+            f'border:none; border-radius:4px; cursor:pointer; font-size:16px; text-align:center; margin-top: -10px;">'
+            f'🌍 Access Atlas</div></a>',
+            unsafe_allow_html=True
+        )
 
         # Carrega metodologias apenas uma vez e normaliza coluna
         @st.cache_data
