@@ -27,7 +27,6 @@ display_order = [
     "SSTRG2", "SAODI", "SASDI", "SAD", "SWSA","ONI", "QBO", "PDO", "AMO", "MJO"
 ]
 
-
 display_order_tab = [
     "AAO", "PSA1", "PSA2", "AO", "PNA", "NAO", "DMI/IOD", "IOSD",
     "NINO12", "NINO3", "NINO34", "NINO4", "SOI", "TNA", "TSA", "SASAI",
@@ -89,9 +88,8 @@ with tab1:
             </h1>
         """
 
-        # Renderiza o título com gradiente no app           
         st.markdown(title_html, unsafe_allow_html=True)
-        horizontal_bar = "<hr style='margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #ff9793;'><br>"    
+        horizontal_bar = "<hr style='margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #ff9793;'><br>"
         st.markdown(
             """
             <div style='text-align: justify'>
@@ -119,7 +117,7 @@ with tab1:
         )
 
         st.markdown(horizontal_bar, True)
-            
+
         st.markdown("""
             **Developers:**
             1. Natan Nogueira - natanchisostomo@gmail.com - Universidade Federal de Itajubá  
@@ -134,10 +132,9 @@ with tab1:
         # ======================
 
         last_values = {}
-        last_date = None 
-        last_date_mjo = None 
+        last_date = None
+        last_date_mjo = None
 
-        # Primeiro, encontra a data mais recente entre os índices NÃO-MJO
         latest_date_non_mjo = None
         for var, data in list_dataset:
             if "MJO" in var.upper():
@@ -161,31 +158,27 @@ with tab1:
             if not df_temp.empty:
                 last_row = df_temp.iloc[-1]
                 val = last_row["value"]
-                
-                # MODIFICAÇÃO: Para índices não-MJO, verificar se tem dado na data mais recente
+
                 if "MJO" in var.upper():
-                    # MJO mantém comportamento original
                     last_values[var] = "-" if pd.isna(val) else round(val, 2)
                     if last_date_mjo is None or last_row["time"] > last_date_mjo:
                         last_date_mjo = last_row["time"]
                 else:
-                    # Verifica se o índice tem dado exatamente na data mais recente
                     if latest_date_non_mjo is not None:
-                        if (last_row["time"].year == latest_date_non_mjo.year and 
+                        if (last_row["time"].year == latest_date_non_mjo.year and
                             last_row["time"].month == latest_date_non_mjo.month):
                             last_values[var] = "-" if pd.isna(val) else round(val, 2)
                         else:
                             last_values[var] = "-"
                     else:
                         last_values[var] = "-" if pd.isna(val) else round(val, 2)
-                    
-                    if last_date is None or last_row["time"] == last_date:
-                        last_date = latest_date_non_mjo
             else:
                 last_values[var] = "-"
 
+        # ✅ CORRIGIDO: last_date agora é sempre a data mais recente dos não-MJO
+        last_date = latest_date_non_mjo
+
         def get_from_last_values(label: str):
-            """Retorna o valor usando o rótulo desejado, respeitando alias e case-insensitive."""
             key = alias.get(label, label)
             if key in last_values:
                 return last_values[key]
@@ -194,24 +187,22 @@ with tab1:
                     return last_values[k]
             return "-"
 
+        # ✅ CORRIGIDO: return "-" agora está FORA do loop
         def get_from_last_values_mjo(label: str):
-            """Retorna o valor usando o rótulo desejado, respeitando alias e case-insensitive."""
             key = alias.get(label, label)
             if key in last_values:
                 return last_values[key]
             for k in last_values.keys():
                 if k.casefold() == key.casefold():
                     return last_values[k]
-                return "-"
+            return "-"
 
-        # quebra em 3 linhas com 9 colunas cada, mantendo a ordem fixa
         rows = [display_order_tab[i:i + 9] for i in range(0, len(display_order_tab), 9)]
         rows_mjo = [display_order_tab_mjo[i:i + 2] for i in range(0, len(display_order_tab_mjo), 2)]
 
         formatted_date = last_date.strftime("%B %Y") if last_date else "Last month"
         formatted_date_mjo = last_date_mjo.strftime("%B %dth, %Y") if last_date_mjo else "Last month"
 
-        # bloco HTML
         html = f"""
         <div style="background-color:#e3e2e2ff; padding:20px; border-radius:10px; color:black; font-family:monospace; text-align:center;">
             <h4 style="color:black; margin-bottom:25px;">Indices for {formatted_date}</h4>
@@ -219,12 +210,10 @@ with tab1:
 
         for row in rows:
             html += "<table style='width:100%; border-collapse:collapse; margin-bottom:20px;'>"
-            # cabeçalho
             html += "<tr>" + "".join(
                 f"<th style='padding:6px; font-size:16px; color:black;'>{label}</th>" for label in row
             ) + "<tr>"
 
-            # valores
             html += "<tr>"
             for label in row:
                 val = get_from_last_values(label)
@@ -243,15 +232,13 @@ with tab1:
         <div style="background-color:#e3e2e2ff; padding:20px; border-radius:10px; color:black; font-family:monospace; text-align:center;">
             <h4 style="color:black; margin-bottom:25px;">Indices for {formatted_date_mjo}</h4>
         """
-        print(formatted_date_mjo)
+
         for row_mjo in rows_mjo:
             html_mjo += "<table style='width:100%; border-collapse:collapse; margin-bottom:20px;'>"
-            # cabeçalho
             html_mjo += "<tr>" + "".join(
                 f"<th style='padding:6px; font-size:16px; color:black;'>{label_mjo}</th>" for label_mjo in row_mjo
             ) + "</tr>"
-            
-            # valores
+
             html_mjo += "<tr>"
             for label_mjo in row_mjo:
                 val_mjo = get_from_last_values_mjo(label_mjo)
@@ -262,23 +249,22 @@ with tab1:
                     color = "red" if val_mjo > 0 else "blue" if val_mjo < 0 else "black"
                     display_val_mjo = f"{val_mjo:.2f}"
                 html_mjo += f"<td style='padding:6px; font-size:16px; font-weight:bold; color:{color};'>{display_val_mjo}</td>"
-                print(label_mjo, val_mjo)
             html_mjo += "<tr></tr>"
-            
+
         html_mjo += "</div>"
 
         st.markdown(html, unsafe_allow_html=True)
         st.markdown(html_mjo, unsafe_allow_html=True)
 
-    if __name__ == "__main__":
-        introducao()
+    # ✅ CORRIGIDO: chamada direta (sem if __name__)
+    introducao()
+
 
 with tab2:
     def plot_indices():
         st.markdown("<h2 style='font-size:24px; color:black;'>📈 Time series of indices</h2>", unsafe_allow_html=True)
         st.sidebar.image("https://github.com/geovanecarlos/APP-INDEX/blob/main/logo-app-tool.png?raw=true", use_container_width=True)
 
-        # Selectbox usando a mesma ordem da tabela
         indice_escolhido_label = st.sidebar.selectbox("Select index:", display_order)
         indice_escolhido = alias.get(indice_escolhido_label, indice_escolhido_label)
 
@@ -294,7 +280,6 @@ with tab2:
             unsafe_allow_html=True
         )
 
-        # Carrega metodologias apenas uma vez e normaliza coluna
         @st.cache_data
         def load_metodologias(path):
             df = pd.read_excel(path)
@@ -310,14 +295,82 @@ with tab2:
         index_name_normalizado = indice_escolhido.strip().lower()
         linha = df_metodologias[df_metodologias["Index_normalizado"] == index_name_normalizado]
 
-        # Cria um dicionário para acesso rápido aos datasets
         @st.cache_data
         def get_dataset_dict(list_dataset):
             return {var: data for var, data in list_dataset}
 
         dataset_dict = get_dataset_dict(list_dataset)
 
-        # Caso especial para MJO
+        # ✅ Função auxiliar para renderizar o bloco de download (evita duplicação)
+        def render_download_block(df_filtered, base_filename, key_suffix=""):
+            col_format, _ = st.columns([1, 10])   # caixa ocupa 1/4 da largura
+            with col_format:
+                file_format = st.selectbox(
+                    "Choose file format:",
+                    options=["CSV (.csv)", "Text (.txt)"],
+                    key=f"other_download_format{key_suffix}"
+                )
+            if file_format == "CSV (.csv)":
+                data_to_download = df_filtered.to_csv(index=False).encode("utf-8")
+                mime_type = "text/csv"
+                file_name = f"{base_filename}.csv"
+            else:
+                data_to_download = df_filtered.to_csv(index=False, sep="\t").encode("utf-8")
+                mime_type = "text/plain; charset=utf-8"
+                file_name = f"{base_filename}.txt"
+
+            st.download_button(
+                label="⬇️ Download file",
+                data=data_to_download,
+                file_name=file_name,
+                mime=mime_type,
+                help="Click to download the selected indice data in the chosen format."
+            )
+
+        # ✅ Função auxiliar para renderizar o seletor de datas
+        def render_date_selector(df_ref, key_suffix=""):
+            st.markdown("**Select date range:**")
+            date_range_option = st.radio(
+                "Select date range",
+                options=["All data", "Custom range"],
+                horizontal=True,
+                key=f"date_range_option{key_suffix}",
+                label_visibility="collapsed"
+            )
+
+            if date_range_option == "Custom range":
+                col_start, col_end, _ = st.columns([1, 1, 9])
+
+                # ✅ Garante que a coluna é datetime antes de pegar min/max
+                time_series = pd.to_datetime(df_ref["time"], errors="coerce").dropna()
+                data_min = time_series.min().date()
+                data_max = time_series.max().date()
+
+                with col_start:
+                    start_date = st.date_input(
+                        "Start date:",
+                        value=data_min,                  
+                        min_value=data_min,            
+                        max_value=data_max,             
+                        key=f"start_date_download{key_suffix}"
+                    )
+
+                with col_end:
+                    end_date = st.date_input(
+                        "End date:",
+                        value=data_max,                 
+                        min_value=data_min,              
+                        max_value=data_max,             
+                        key=f"end_date_download{key_suffix}"
+                    )
+
+                end_ts = pd.Timestamp(end_date) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
+                return date_range_option, pd.Timestamp(start_date), end_ts
+            return date_range_option, None, None
+
+        # ============================================================
+        # CASO ESPECIAL: MJO
+        # ============================================================
         if indice_escolhido_label == "MJO":
             amplitude_path = base_path / "dataset" / "amplitude_mjo.txt"
             fase_path = base_path / "dataset" / "fase_mjo.txt"
@@ -325,11 +378,10 @@ with tab2:
                 df_amp = pd.read_csv(amplitude_path, sep="\t", names=["time", "amplitude"], header=0)
                 df_fase = pd.read_csv(fase_path, sep="\t", names=["time", "phase"], header=0)
 
-                # Processa datas
-                for df in [df_amp, df_fase]:
-                    df["time"] = pd.to_datetime(df["time"], errors='coerce')
-                    df.dropna(subset=["time"], inplace=True)
-                    df.sort_values("time", inplace=True)
+                for df_ in [df_amp, df_fase]:
+                    df_["time"] = pd.to_datetime(df_["time"], errors='coerce')
+                    df_.dropna(subset=["time"], inplace=True)
+                    df_.sort_values("time", inplace=True)
 
                 # ---------------- FIGURA AMPLITUDE ----------------
                 fig_amp = go.Figure([
@@ -351,7 +403,6 @@ with tab2:
                                 dict(count=6, label="6 months", step="month", stepmode="backward"),
                                 dict(count=3, label="3 months", step="month", stepmode="backward"),
                                 dict(count=1, label="1 month", step="month", stepmode="backward")
-
                             ]
                         ),
                         rangeslider=dict(visible=True),
@@ -400,43 +451,35 @@ with tab2:
                 st.plotly_chart(fig_fase, use_container_width=True)
 
                 # -----------------------------
-                # Botão para download dos dados
+                # Download dos dados (MJO)
                 # -----------------------------
                 st.markdown("<h2 style='font-size:24px; color:black;'>📥 Download data</h2>", unsafe_allow_html=True)
-                file_format = st.selectbox("Choose file format:", options=["CSV (.csv)", "Text (.txt)"], key="mjo_download_format")
-                base_filename_amp = "MJO_amplitude_data"
-                base_filename_fase = "MJO_phase_data"
 
-                if file_format == "CSV (.csv)":
-                    data_to_download_amp = df_amp.to_csv(index=False).encode("utf-8")
-                    data_to_download_fase = df_fase.to_csv(index=False).encode("utf-8")
-                    mime_type = "text/csv"
-                    file_name_amp = f"{base_filename_amp}.csv"
-                    file_name_fase = f"{base_filename_fase}.csv"
+                # ✅ CORRIGIDO: usa df_amp como referência de datas (antes usava `df` inexistente)
+                date_range_option, start_ts, end_ts = render_date_selector(df_amp, key_suffix="_mjo")
+
+                if date_range_option == "Custom range":
+                    df_amp_filtered = df_amp[
+                        (df_amp["time"] >= start_ts) & (df_amp["time"] <= end_ts)
+                    ]
+                    df_fase_filtered = df_fase[
+                        (df_fase["time"] >= start_ts) & (df_fase["time"] <= end_ts)
+                    ]
                 else:
-                    data_to_download_amp = df_amp.to_csv(index=False, sep="\t").encode("utf-8")
-                    data_to_download_fase = df_fase.to_csv(index=False, sep="\t").encode("utf-8")
-                    mime_type = "text/plain"
-                    file_name_amp = f"{base_filename_amp}.txt"
-                    file_name_fase = f"{base_filename_fase}.txt"
+                    df_amp_filtered = df_amp
+                    df_fase_filtered = df_fase
 
-                st.download_button(
-                    label="⬇️ Download amplitude file",
-                    data=data_to_download_amp,
-                    file_name=file_name_amp,
-                    mime=mime_type,
-                    help="Click to download the MJO amplitude data in the chosen format."
-                )
-                st.download_button(
-                    label="⬇️ Download phase file",
-                    data=data_to_download_fase,
-                    file_name=file_name_fase,
-                    mime=mime_type,
-                    help="Click to download the MJO phase data in the chosen format."
-                )
+                # Junta amplitude + fase em um único DataFrame
+                df_filtered = pd.merge(
+                    df_amp_filtered, df_fase_filtered,
+                    on="time", how="outer"
+                ).sort_values("time")
+
+                base_filename = f"{indice_escolhido}_indice data"
+                render_download_block(df_filtered, base_filename, key_suffix="_mjo")
 
                 # -----------------------------
-                # Explicar metodologia
+                # Metodologia
                 # -----------------------------
                 st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>", unsafe_allow_html=True)
                 if not linha.empty:
@@ -454,8 +497,10 @@ with tab2:
             else:
                 st.warning("MJO data files not found.")
 
+        # ============================================================
+        # CASO GERAL: demais índices
+        # ============================================================
         else:
-            # Busca o DataFrame correspondente ao índice selecionado via dicionário
             df = dataset_dict.get(indice_escolhido)
             if df is not None:
                 df = df.copy()
@@ -464,13 +509,11 @@ with tab2:
                 df.dropna(subset=["time"], inplace=True)
                 df.sort_values("time", inplace=True)
 
-                # Separar positivos e negativos
                 df_pos = df.copy()
                 df_neg = df.copy()
                 df_pos["value"] = df_pos["value"].clip(lower=0)
                 df_neg["value"] = df_neg["value"].clip(upper=0)
 
-                # Plotagem utilizando o Plotly
                 fig = go.Figure([
                     go.Bar(x=df_pos["time"], y=df_pos["value"], marker_color="red", name="Positive"),
                     go.Bar(x=df_neg["time"], y=df_neg["value"], marker_color="blue", name="Negative")
@@ -511,32 +554,25 @@ with tab2:
                 st.plotly_chart(fig, use_container_width=True)
 
             # -----------------------------
-            # Botão para download dos dados
+            # Download dos dados (não-MJO)
             # -----------------------------
             st.markdown("<h2 style='font-size:24px; color:black;'>📥 Download data</h2>", unsafe_allow_html=True)
 
-            file_format = st.selectbox("Choose file format:", options=["CSV (.csv)", "Text (.txt)"], key="other_download_format")
-            base_filename = f"{indice_escolhido}_indice data"
+            # ✅ CORRIGIDO: usa a função auxiliar (label_visibility + colunas lado a lado + filtro correto)
+            date_range_option, start_ts, end_ts = render_date_selector(df, key_suffix="_general")
 
-            if file_format == "CSV (.csv)":
-                data_to_download = df.to_csv(index=False).encode("utf-8")
-                mime_type = "text/csv"
-                file_name = f"{base_filename}.csv"
+            if date_range_option == "Custom range":
+                df_filtered = df[
+                    (df["time"] >= start_ts) & (df["time"] <= end_ts)
+                ]
             else:
-                data_to_download = df.to_csv(index=False, sep="\t").encode("utf-8")
-                mime_type = "text/plain"
-                file_name = f"{base_filename}.txt"
+                df_filtered = df
 
-            st.download_button(
-                label="⬇️ Download file",
-                data=data_to_download,
-                file_name=file_name,
-                mime=mime_type,
-                help="Click to download the selected indice data in the chosen format."
-            )
+            base_filename = f"{indice_escolhido}_indice data"
+            render_download_block(df_filtered, base_filename, key_suffix="_general")
 
             # -----------------------------
-            # Explicar metodologia
+            # Metodologia
             # -----------------------------
             st.markdown("<h2 style='font-size:24px; color:black;'>🛠️ Methodology</h2>", unsafe_allow_html=True)
 
@@ -551,6 +587,6 @@ with tab2:
                 st.markdown(f"<p style='text-align: justify;'><strong>📚 Reference:</strong> {referencia}</p>", unsafe_allow_html=True)
             else:
                 st.markdown(f"⏳ Methodology for the **{indice_escolhido}** index under development.")
-                
-    if __name__ == "__main__":
-        plot_indices()
+
+    # ✅ CORRIGIDO: chamada direta (sem if __name__)
+    plot_indices()
