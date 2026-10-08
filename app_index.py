@@ -144,6 +144,7 @@ with tab1:
             df_temp["time"] = pd.to_datetime(df_temp["time"], errors='coerce')
             df_temp.dropna(subset=["time"], inplace=True)
             if not df_temp.empty:
+                #print(f"{var}: max = {df_temp['time'].max()}") #QUEBRADO AQUI
                 max_date = df_temp["time"].max()
                 if latest_date_non_mjo is None or max_date > latest_date_non_mjo:
                     latest_date_non_mjo = max_date
@@ -177,7 +178,6 @@ with tab1:
 
         # ✅ CORRIGIDO: last_date agora é sempre a data mais recente dos não-MJO
         last_date = latest_date_non_mjo
-
         def get_from_last_values(label: str):
             key = alias.get(label, label)
             if key in last_values:
@@ -303,7 +303,7 @@ with tab2:
 
         # ✅ Função auxiliar para renderizar o bloco de download (evita duplicação)
         def render_download_block(df_filtered, base_filename, key_suffix=""):
-            col_format, _ = st.columns([1, 10])   # caixa ocupa 1/4 da largura
+            col_format, _ = st.columns([1, 6])   # caixa ocupa 1/4 da largura
             with col_format:
                 file_format = st.selectbox(
                     "Choose file format:",
