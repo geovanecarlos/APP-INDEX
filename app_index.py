@@ -303,7 +303,7 @@ with tab2:
 
         # ✅ Função auxiliar para renderizar o bloco de download (evita duplicação)
         def render_download_block(df_filtered, base_filename, key_suffix=""):
-            col_format, _ = st.columns([1, 6])   # caixa ocupa 1/4 da largura
+            col_format, _ = st.columns([1, 7])   # caixa ocupa 1/4 da largura
             with col_format:
                 file_format = st.selectbox(
                     "Choose file format:",
